@@ -10,7 +10,7 @@ import {
   Mail,
   Download
 } from 'lucide-react';
-import { downloadProposalPdf } from '../utils/pdfDownloader';
+import { downloadProposalPdf, createAndSaveVectorPdf } from '../utils/pdfDownloader';
 
 interface CustomerPortalProps {
   proposalId: string;
@@ -46,7 +46,9 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     if (!proposal) return;
     setDownloadingPdf(true);
     try {
-      await downloadProposalPdf(proposalPaperRef.current, `Teklif_${proposal.proposalNumber}`);
+      createAndSaveVectorPdf(proposal);
+    } catch (err) {
+      console.error('PDF download error:', err);
     } finally {
       setDownloadingPdf(false);
     }

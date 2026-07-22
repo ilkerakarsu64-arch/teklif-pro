@@ -20,7 +20,7 @@ import {
   Trash2,
   Download
 } from 'lucide-react';
-import { downloadProposalPdf } from '../utils/pdfDownloader';
+import { downloadProposalPdf, createAndSaveVectorPdf } from '../utils/pdfDownloader';
 
 interface ProposalDetailProps {
   proposal: Proposal;
@@ -54,7 +54,9 @@ export const ProposalDetail: React.FC<ProposalDetailProps> = ({
   const handleDownloadPdf = async () => {
     setDownloadingPdf(true);
     try {
-      await downloadProposalPdf(proposalPaperRef.current, `Teklif_${proposal.proposalNumber}`);
+      createAndSaveVectorPdf(proposal, settings);
+    } catch (err) {
+      console.error('PDF download error:', err);
     } finally {
       setDownloadingPdf(false);
     }
