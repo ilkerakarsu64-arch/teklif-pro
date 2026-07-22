@@ -616,6 +616,8 @@ function AppContent() {
               setSimulatorProposal(proposals[0] || null);
               setIsSimulatorOpen(true);
             }}
+            onOpenReports={() => setActiveTab('reports')}
+            onOpenSettings={() => setActiveTab('settings')}
           />
         ) : activeTab === 'proposals' ? (
           /* Proposals Tab */
