@@ -145,7 +145,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   const goalProgressPercent = Math.min(100, Math.round((totalApprovedAmount / monthlyGoal) * 100));
 
   return (
-    <div className="space-y-6 antialiased animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="space-y-6 antialiased animate-in fade-in slide-in-from-bottom-2 duration-500 bg-slate-100 p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs">
       
       {/* ------------------------------------------------------------- */}
       {/* Top Header & Quick Actions (Animated Banner)                  */}
