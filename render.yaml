@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: teklif-pro
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
