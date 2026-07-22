@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Proposal, AppNotification } from '../types';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { 
@@ -10,14 +10,18 @@ import {
   Sparkles,
   Zap,
   BarChart3,
-  PieChart as PieChartIcon
+  PieChart as PieChartIcon,
+  AlertTriangle,
+  ArrowUpRight,
+  ArrowRight,
+  ShieldCheck,
+  Calendar,
+  Layers
 } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -42,23 +46,36 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   onNewProposal,
   onOpenCustomerSimulator
 }) => {
-  // Calculations
+  // Key Financial Metrics
   const totalCount = proposals.length;
   const approvedProposals = proposals.filter(p => p.status === 'ONAYLANDI');
   const pendingProposals = proposals.filter(p => p.status === 'GONDERILDI' || p.status === 'INCELENIYOR');
   const rejectedProposals = proposals.filter(p => p.status === 'REDDEDILDI');
+  const draftProposals = proposals.filter(p => p.status === 'TASLAK');
 
   const totalApprovedAmount = approvedProposals.reduce((sum, p) => sum + p.grandTotal, 0);
   const totalPendingAmount = pendingProposals.reduce((sum, p) => sum + p.grandTotal, 0);
+  const totalVolumeAmount = proposals.reduce((sum, p) => sum + p.grandTotal, 0);
 
   const conversionRate = totalCount > 0 
     ? Math.round((approvedProposals.length / totalCount) * 100) 
     : 0;
 
-  // Generate 30-day timeline chart data
-  const chartData = React.useMemo(() => {
+  // Expiring Soon Proposals (within 5 days)
+  const expiringProposals = useMemo(() => {
+    const today = new Date();
+    const fiveDaysLater = new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000);
+
+    return proposals.filter(p => {
+      if (p.status === 'ONAYLANDI' || p.status === 'REDDEDILDI') return false;
+      const vDate = new Date(p.validUntilDate);
+      return vDate <= fiveDaysLater && vDate >= today;
+    });
+  }, [proposals]);
+
+  // 30-Day Timeline Chart Data
+  const chartData = useMemo(() => {
     const result = [];
-    // Find the latest proposal date or use today
     const now = new Date();
     
     for (let i = 29; i >= 0; i--) {
@@ -80,16 +97,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         return pDate === dateStr && p.status === 'ONAYLANDI';
       });
 
-      const dayPending = proposals.filter(p => {
-        const pDate = p.issueDate || p.createdAt?.split('T')[0];
-        return pDate === dateStr && (p.status === 'GONDERILDI' || p.status === 'INCELENIYOR');
-      });
-
-      const dayRejected = proposals.filter(p => {
-        const pDate = p.issueDate || p.createdAt?.split('T')[0];
-        return pDate === dateStr && p.status === 'REDDEDILDI';
-      });
-
       const revenue = dayApproved.reduce((sum, p) => sum + p.grandTotal, 0);
       const totalVolume = dayProposals.reduce((sum, p) => sum + p.grandTotal, 0);
 
@@ -99,9 +106,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         ciro: revenue,
         toplamHacim: totalVolume,
         toplamTeklif: dayProposals.length,
-        onaylanan: dayApproved.length,
-        bekleyen: dayPending.length,
-        reddedilen: dayRejected.length
+        onaylanan: dayApproved.length
       });
     }
 
@@ -111,82 +116,51 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   // Pie chart data for status breakdown
   const statusPieData = [
     { name: 'Onaylandı', value: approvedProposals.length, color: '#10b981' },
-    { name: 'Onay Bekliyor', value: pendingProposals.length, color: '#f97316' },
-    { name: 'Reddedildi', value: rejectedProposals.length, color: '#f43f5e' },
-    { name: 'Taslak', value: proposals.filter(p => p.status === 'TASLAK').length, color: '#64748b' }
+    { name: 'Onay Bekliyor', value: pendingProposals.length, color: '#f59e0b' },
+    { name: 'Reddedildi', value: rejectedProposals.length, color: '#ef4444' },
+    { name: 'Taslak', value: draftProposals.length, color: '#64748b' }
   ].filter(item => item.value > 0);
 
-  // Custom Chart Tooltips
-  const CustomRevenueTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-slate-900 text-white p-3 rounded-sm border border-slate-700 shadow-xl text-xs space-y-1.5 font-sans">
-          <p className="font-bold border-b border-slate-800 pb-1 text-slate-300 font-mono">{label}</p>
-          <div className="space-y-1">
-            <p className="text-emerald-400 font-semibold flex justify-between gap-6">
-              <span>Onaylanan Ciro:</span>
-              <span className="font-mono">{formatCurrency(payload[0]?.value || 0, 'TRY')}</span>
-            </p>
-            {payload[1] && (
-              <p className="text-blue-400 font-semibold flex justify-between gap-6">
-                <span>Toplam Teklif Hacmi:</span>
-                <span className="font-mono">{formatCurrency(payload[1]?.value || 0, 'TRY')}</span>
-              </p>
-            )}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const CustomCountTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-slate-900 text-white p-3 rounded-sm border border-slate-700 shadow-xl text-xs space-y-1 font-sans">
-          <p className="font-bold border-b border-slate-800 pb-1 text-slate-300 font-mono">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} style={{ color: entry.color }} className="font-semibold flex justify-between gap-6">
-              <span>{entry.name}:</span>
-              <span className="font-mono">{entry.value} Adet</span>
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+  // Target Revenue Goal (Mock Goal for Progress Display)
+  const monthlyGoal = 500000;
+  const goalProgressPercent = Math.min(100, Math.round((totalApprovedAmount / monthlyGoal) * 100));
 
   return (
     <div className="space-y-8">
       
-      {/* Top Banner */}
-      <div className="bg-slate-900 text-white rounded-sm p-6 sm:p-8 border border-slate-800 shadow-xs relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-blue-900/60 text-blue-300 border border-blue-700/50 text-[11px] font-bold uppercase tracking-widest mb-3">
+      {/* ------------------------------------------------------------- */}
+      {/* Top Executive Header Banner                                   */}
+      {/* ------------------------------------------------------------- */}
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white rounded-xl p-6 sm:p-8 border border-slate-800 shadow-lg relative overflow-hidden">
+        {/* Subtle Background Glow Accent */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[11px] font-mono font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-              <span>Otomatik Onay & Bildirim Yönetimi</span>
+              <span>Teklif Yönetim & Canlı Bildirim Merkezi</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              Teklif Performans ve Takip Paneli
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Yönetici Kontrol Paneli
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-2xl leading-relaxed">
-              Müşterilerinize doğrudan e-posta ile teklif gönderin. Müşteriler teklifi görüntülediğinde, onayladığında veya reddettiğinde sisteminize anında canlı bildirim düşer.
+            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              Müşterilerinize doğrudan e-posta teklifleri iletin. Teklif açıldığında, incelendiğinde veya onaylandığında anında canlı bildirim alın.
             </p>
           </div>
 
+          {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={onOpenCustomerSimulator}
-              className="px-4 py-2.5 rounded-sm bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs tracking-wide transition-all shadow-xs flex items-center gap-2"
+              className="px-4 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs tracking-wide transition-all shadow-md flex items-center gap-2 border border-amber-400/50"
             >
               <Zap className="w-4 h-4 fill-slate-950" />
               <span>Canlı Bildirimi Test Et</span>
             </button>
             <button
               onClick={onNewProposal}
-              className="px-5 py-2.5 rounded-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wide transition-colors shadow-xs"
+              className="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs tracking-wide transition-all shadow-md border border-blue-500/50"
             >
               + Yeni Teklif Oluştur
             </button>
@@ -194,97 +168,157 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* ------------------------------------------------------------- */}
+      {/* Expiring Soon Alert Bar (If Any)                              */}
+      {/* ------------------------------------------------------------- */}
+      {expiringProposals.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-600 shrink-0">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-bold text-slate-900 block">
+                {expiringProposals.length} adet teklifin son geçerlilik tarihi yaklaşıyor!
+              </span>
+              <span className="text-slate-600">
+                Müşterilerle iletişime geçip teklif durumunu güncelleyebilirsiniz.
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => onSelectProposal(expiringProposals[0].id)}
+            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs transition-colors shrink-0 flex items-center gap-1"
+          >
+            <span>İncele</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* KPI Cards Grid                                                */}
+      {/* ------------------------------------------------------------- */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         
-        {/* Total Proposals */}
-        <div className="bg-white p-6 border border-slate-200 rounded-sm">
+        {/* Approved Revenue Card */}
+        <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-xs space-y-4 hover:border-emerald-300 transition-all">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Aktif Teklifler
-            </p>
-            <div className="w-8 h-8 rounded-sm bg-slate-100 flex items-center justify-center text-slate-600">
-              <FileText className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-3xl font-bold mt-2 text-slate-900 font-mono">
-            {totalCount}
-          </p>
-          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Dönüşüm Oranı</span>
-            <span className="font-bold text-blue-600">%{conversionRate}</span>
-          </div>
-        </div>
-
-        {/* Onay Bekleyen */}
-        <div className="bg-white p-6 border border-slate-200 rounded-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Onay Bekleyen
-            </p>
-            <div className="w-8 h-8 rounded-sm bg-orange-50 flex items-center justify-center text-orange-500">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-3xl font-bold mt-2 text-orange-500 font-mono">
-            {pendingProposals.length}
-          </p>
-          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Bekleyen Tutar</span>
-            <span className="font-semibold text-slate-700 font-mono">{formatCurrency(totalPendingAmount, 'TRY')}</span>
-          </div>
-        </div>
-
-        {/* Bu Ay Onaylanan */}
-        <div className="bg-white p-6 border border-slate-200 rounded-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Onaylanan Hacim
-            </p>
-            <div className="w-8 h-8 rounded-sm bg-emerald-50 flex items-center justify-center text-emerald-600">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Onaylanan Ciro</span>
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-3xl font-bold mt-2 text-emerald-600 font-mono">
-            {formatCurrency(totalApprovedAmount, 'TRY')}
-          </p>
-          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-emerald-600">
-            <span>{approvedProposals.length} Onaylı Teklif</span>
-            <TrendingUp className="w-4 h-4" />
+          <div>
+            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+              {formatCurrency(totalApprovedAmount, 'TRY')}
+            </div>
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-emerald-600 font-semibold">
+              <span>{approvedProposals.length} Onaylı Teklif</span>
+              <TrendingUp className="w-4 h-4" />
+            </div>
           </div>
         </div>
 
-        {/* Reddedilen */}
-        <div className="bg-white p-6 border border-slate-200 rounded-sm">
+        {/* Pending Opportunities Card */}
+        <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-xs space-y-4 hover:border-amber-300 transition-all">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Reddedilen Teklifler
-            </p>
-            <div className="w-8 h-8 rounded-sm bg-rose-50 flex items-center justify-center text-rose-600">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Onay Bekleyen</span>
+            <div className="w-9 h-9 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl font-black text-amber-600 font-mono tracking-tight">
+              {pendingProposals.length} Teklif
+            </div>
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>Bekleyen Tutar</span>
+              <span className="font-semibold text-slate-800 font-mono">{formatCurrency(totalPendingAmount, 'TRY')}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Proposal Volume & Conversion Rate */}
+        <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-xs space-y-4 hover:border-blue-300 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Toplam Teklifler</span>
+            <div className="w-9 h-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+              <FileText className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+              {totalCount} Adet
+            </div>
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>Dönüşüm Oranı</span>
+              <span className="font-bold text-blue-600 font-mono">%{conversionRate}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Rejected Proposals Card */}
+        <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-xs space-y-4 hover:border-rose-300 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Reddedilen</span>
+            <div className="w-9 h-9 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
               <XCircle className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-3xl font-bold mt-2 text-slate-900 font-mono">
-            {rejectedProposals.length}
-          </p>
-          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Red Oranı</span>
-            <span className="font-semibold text-rose-500">
-              %{totalCount > 0 ? Math.round((rejectedProposals.length / totalCount) * 100) : 0}
-            </span>
+          <div>
+            <div className="text-2xl font-black text-rose-600 font-mono tracking-tight">
+              {rejectedProposals.length} Teklif
+            </div>
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>Red Oranı</span>
+              <span className="font-semibold text-rose-600 font-mono">
+                %{totalCount > 0 ? Math.round((rejectedProposals.length / totalCount) * 100) : 0}
+              </span>
+            </div>
           </div>
         </div>
 
       </div>
 
-      {/* Analytics Charts Section (Recharts) */}
+      {/* ------------------------------------------------------------- */}
+      {/* Monthly Target Progress Meter                                 */}
+      {/* ------------------------------------------------------------- */}
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-blue-600" />
+            <span className="font-bold text-slate-900 uppercase tracking-wider">Aylık Ciro Hedefi Performansı</span>
+          </div>
+          <div className="font-mono text-slate-700">
+            <strong className="text-emerald-600 font-bold">{formatCurrency(totalApprovedAmount, 'TRY')}</strong> / {formatCurrency(monthlyGoal, 'TRY')}
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full transition-all duration-1000"
+            style={{ width: `${goalProgressPercent}%` }}
+          />
+        </div>
+        
+        <div className="flex items-center justify-between text-[11px] text-slate-500">
+          <span>Hedef Tamamlanma Oranı</span>
+          <span className="font-bold text-slate-900 font-mono">%{goalProgressPercent}</span>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* Analytics Charts Section (Recharts)                           */}
+      {/* ------------------------------------------------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Revenue Trend Area Chart (8 cols) */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-sm p-6 space-y-4">
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
-              <h2 className="text-sm font-bold text-slate-800 tracking-tight flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 uppercase">
                 <BarChart3 className="w-4 h-4 text-emerald-600" />
                 <span>Son 30 Günlük Ciro ve Teklif Hacim Trendi</span>
               </h2>
@@ -296,11 +330,11 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             <div className="flex items-center gap-4 text-xs font-semibold">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                <span className="text-slate-600">Onaylanan Ciro</span>
+                <span className="text-slate-700">Onaylanan Ciro</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-blue-300 inline-block"></span>
-                <span className="text-slate-600">Toplam Hacim</span>
+                <span className="w-3 h-3 rounded-full bg-blue-400 inline-block"></span>
+                <span className="text-slate-700">Toplam Hacim</span>
               </div>
             </div>
           </div>
@@ -314,8 +348,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorHacim" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#93c5fd" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#93c5fd" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#60a5fa" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -332,7 +366,10 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                   axisLine={false}
                   tickFormatter={(val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k₺` : `${val}₺`}
                 />
-                <Tooltip content={<CustomRevenueTooltip />} />
+                <Tooltip 
+                  formatter={(val: any) => formatCurrency(Number(val) || 0, 'TRY')}
+                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                />
                 <Area 
                   type="monotone" 
                   dataKey="ciro" 
@@ -346,7 +383,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                   type="monotone" 
                   dataKey="toplamHacim" 
                   name="Toplam Hacim"
-                  stroke="#60a5fa" 
+                  stroke="#3b82f6" 
                   strokeWidth={1.5}
                   strokeDasharray="4 4"
                   fillOpacity={1} 
@@ -357,10 +394,10 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
           </div>
         </div>
 
-        {/* Status Breakdown & Conversion Chart (4 cols) */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-sm p-6 space-y-4 flex flex-col justify-between">
+        {/* Status Breakdown Chart (4 cols) */}
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-xs flex flex-col justify-between">
           <div className="border-b border-slate-100 pb-3">
-            <h2 className="text-sm font-bold text-slate-800 tracking-tight flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 uppercase">
               <PieChartIcon className="w-4 h-4 text-blue-600" />
               <span>Teklif Onay & Durum Oranları</span>
             </h2>
@@ -370,27 +407,31 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
           </div>
 
           <div className="h-48 w-full relative flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={statusPieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={75}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {statusPieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(val: any, name: any) => [`${val} Adet`, name]}
-                  contentStyle={{ backgroundColor: '#0f172a', borderRadius: '2px', border: 'none', color: '#fff', fontSize: '11px' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {statusPieData.length === 0 ? (
+              <div className="text-xs text-slate-400">Veri yok</div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusPieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={75}
+                    paddingAngle={4}
+                    dataKey="value"
+                  >
+                    {statusPieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(val: any, name: any) => [`${val} Adet`, name]}
+                    contentStyle={{ backgroundColor: '#0f172a', borderRadius: '6px', border: 'none', color: '#fff', fontSize: '11px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
             
             {/* Inner Center Stat */}
             <div className="absolute text-center pointer-events-none">
@@ -406,7 +447,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
               <span className="text-slate-600 font-semibold">{approvedProposals.length} Onaylı</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
               <span className="text-slate-600 font-semibold">{pendingProposals.length} Bekleyen</span>
             </div>
             <div className="flex items-center gap-2">
@@ -415,21 +456,23 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
-              <span className="text-slate-600 font-semibold">{proposals.filter(p => p.status === 'TASLAK').length} Taslak</span>
+              <span className="text-slate-600 font-semibold">{draftProposals.length} Taslak</span>
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* Main Grid: Recent Proposals & Live Notifications */}
+      {/* ------------------------------------------------------------- */}
+      {/* Main Grid: Recent Proposals & Live Notifications              */}
+      {/* ------------------------------------------------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left Column: Recent Proposals (8 cols) */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-sm flex flex-col">
-          <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-xs flex flex-col overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <div>
-              <h2 className="font-bold text-slate-800 text-sm tracking-tight">Son Oluşturulan Teklifler</h2>
+              <h2 className="font-bold text-slate-900 text-sm tracking-tight uppercase">Son Oluşturulan Teklifler</h2>
               <p className="text-xs text-slate-400">Güncel müşteri teklif listesi ve canlı onay durumları</p>
             </div>
             <button 
@@ -440,85 +483,94 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             </button>
           </div>
 
-          <div className="flex-1 overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">
-                  <th className="px-6 py-3 font-semibold">Teklif / Müşteri</th>
-                  <th className="px-6 py-3 font-semibold">Tarih</th>
-                  <th className="px-6 py-3 font-semibold">Tutar</th>
-                  <th className="px-6 py-3 font-semibold">Durum</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {proposals.slice(0, 6).map((proposal) => (
-                  <tr
-                    key={proposal.id}
-                    onClick={() => onSelectProposal(proposal.id)}
-                    className="hover:bg-slate-50 cursor-pointer transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-800 flex items-center gap-2">
-                        <span className="text-blue-600 font-mono font-semibold">{proposal.proposalNumber}</span>
-                        <span>•</span>
-                        <span className="truncate">{proposal.customer.companyName || proposal.customer.name}</span>
-                      </div>
-                      <div className="text-xs text-slate-400 truncate mt-0.5">{proposal.title}</div>
-                    </td>
-
-                    <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
-                      {formatDate(proposal.issueDate)}
-                    </td>
-
-                    <td className="px-6 py-4 font-mono font-semibold text-slate-800 whitespace-nowrap">
-                      {formatCurrency(proposal.grandTotal, proposal.currency)}
-                    </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {proposal.status === 'ONAYLANDI' && (
-                        <span className="px-2.5 py-1 text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 rounded-sm border border-emerald-200">
-                          Müşteri Onayladı
-                        </span>
-                      )}
-                      {proposal.status === 'REDDEDILDI' && (
-                        <span className="px-2.5 py-1 text-[10px] font-bold uppercase bg-rose-50 text-rose-700 rounded-sm border border-rose-200">
-                          Reddedildi
-                        </span>
-                      )}
-                      {proposal.status === 'INCELENIYOR' && (
-                        <span className="px-2.5 py-1 text-[10px] font-bold uppercase bg-amber-50 text-amber-700 rounded-sm border border-amber-200">
-                          İnceleniyor
-                        </span>
-                      )}
-                      {proposal.status === 'GONDERILDI' && (
-                        <span className="px-2.5 py-1 text-[10px] font-bold uppercase bg-blue-50 text-blue-600 rounded-sm border border-blue-200">
-                          Mail Gönderildi
-                        </span>
-                      )}
-                      {proposal.status === 'TASLAK' && (
-                        <span className="px-2.5 py-1 text-[10px] font-bold uppercase bg-slate-100 text-slate-600 rounded-sm border border-slate-200">
-                          Taslak
-                        </span>
-                      )}
-                    </td>
+          {proposals.length === 0 ? (
+            <div className="p-12 text-center text-xs text-slate-400">
+              Henüz teklif kaydı bulunmuyor. Yeni teklif eklemek için yukarıdaki butonu kullanabilirsiniz.
+            </div>
+          ) : (
+            <div className="flex-1 overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-100/50 font-bold">
+                    <th className="px-6 py-3">Teklif / Müşteri</th>
+                    <th className="px-6 py-3">Tarih</th>
+                    <th className="px-6 py-3">Tutar</th>
+                    <th className="px-6 py-3">Durum</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {proposals.slice(0, 6).map((proposal) => (
+                    <tr
+                      key={proposal.id}
+                      onClick={() => onSelectProposal(proposal.id)}
+                      className="hover:bg-blue-50/50 cursor-pointer transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-slate-900 flex items-center gap-2">
+                          <span className="text-blue-600 font-mono font-bold">{proposal.proposalNumber}</span>
+                          <span>•</span>
+                          <span className="truncate">{proposal.customer.companyName || proposal.customer.name}</span>
+                        </div>
+                        <div className="text-xs text-slate-500 truncate mt-0.5">{proposal.title}</div>
+                      </td>
+
+                      <td className="px-6 py-4 text-slate-600 font-mono whitespace-nowrap">
+                        {formatDate(proposal.issueDate)}
+                      </td>
+
+                      <td className="px-6 py-4 font-mono font-bold text-slate-900 whitespace-nowrap">
+                        {formatCurrency(proposal.grandTotal, proposal.currency)}
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {proposal.status === 'ONAYLANDI' && (
+                          <span className="px-2.5 py-1 text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200">
+                            Müşteri Onayladı
+                          </span>
+                        )}
+                        {proposal.status === 'REDDEDILDI' && (
+                          <span className="px-2.5 py-1 text-[10px] font-bold uppercase bg-rose-50 text-rose-700 rounded-md border border-rose-200">
+                            Reddedildi
+                          </span>
+                        )}
+                        {proposal.status === 'INCELENIYOR' && (
+                          <span className="px-2.5 py-1 text-[10px] font-bold uppercase bg-amber-50 text-amber-700 rounded-md border border-amber-200">
+                            İnceleniyor
+                          </span>
+                        )}
+                        {proposal.status === 'GONDERILDI' && (
+                          <span className="px-2.5 py-1 text-[10px] font-bold uppercase bg-blue-50 text-blue-600 rounded-md border border-blue-200">
+                            Mail Gönderildi
+                          </span>
+                        )}
+                        {proposal.status === 'TASLAK' && (
+                          <span className="px-2.5 py-1 text-[10px] font-bold uppercase bg-slate-100 text-slate-600 rounded-md border border-slate-200">
+                            Taslak
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
-        {/* Right Column: Real-time Notifications (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col bg-white border border-slate-200 rounded-sm">
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white rounded-t-sm">
-            <h3 className="font-bold text-xs uppercase tracking-widest text-slate-100">Bildirim Merkezi</h3>
-            <span className="bg-blue-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">CANLI</span>
+        {/* Right Column: Real-time Notifications Feed (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+          <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
+            <h3 className="font-bold text-xs uppercase tracking-widest text-slate-100 flex items-center gap-2">
+              <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+              <span>Canlı Bildirim Akışı</span>
+            </h3>
+            <span className="bg-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">CANLI</span>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[420px]">
             {notifications.length === 0 ? (
               <div className="text-center py-12 text-slate-400 text-xs">
-                Henüz canlı bildirim kaydedilmedi.
+                Henüz canlı bildirim kaydı yok.
               </div>
             ) : (
               notifications.slice(0, 6).map((notif) => {
@@ -536,7 +588,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                   typeColor = "text-rose-700";
                 } else if (notif.type === 'GORUNTULEME') {
                   borderClass = "border-l-4 border-blue-500 bg-blue-50/50";
-                  typeText = "E-POSTA / TEKLİF GÖRÜLDÜ";
+                  typeText = "TEKLİF GÖRÜLDÜ";
                   typeColor = "text-blue-700";
                 } else if (notif.type === 'EPOSTA_GONDERILDI') {
                   borderClass = "border-l-4 border-amber-500 bg-amber-50/50";
@@ -548,7 +600,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                   <div
                     key={notif.id}
                     onClick={() => onSelectProposal(notif.proposalId)}
-                    className={`p-4 ${borderClass} rounded-r-sm cursor-pointer hover:brightness-95 transition-all text-xs`}
+                    className={`p-3.5 ${borderClass} rounded-r-lg cursor-pointer hover:brightness-95 transition-all text-xs space-y-1`}
                   >
                     <div className="flex justify-between items-start">
                       <span className={`text-[10px] font-bold uppercase tracking-wider ${typeColor}`}>
@@ -559,13 +611,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                       </span>
                     </div>
 
-                    <p className="text-slate-800 font-medium mt-1 leading-snug">
+                    <p className="text-slate-800 font-medium leading-snug">
                       {notif.message}
                     </p>
 
-                    <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-200/50">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-200/50">
                       <span>{notif.customerName}</span>
-                      <span className="font-mono font-semibold text-blue-600">{notif.proposalNumber}</span>
+                      <span className="font-mono font-bold text-blue-600">{notif.proposalNumber}</span>
                     </div>
                   </div>
                 );
@@ -573,12 +625,12 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             )}
           </div>
 
-          <div className="p-4 bg-slate-50 border-t border-slate-100 rounded-b-sm">
+          <div className="p-4 bg-slate-50 border-t border-slate-100">
             <button
               onClick={onOpenCustomerSimulator}
-              className="w-full py-2 bg-slate-800 hover:bg-slate-900 text-amber-400 font-bold text-xs rounded-sm transition-colors flex items-center justify-center gap-1.5 border border-slate-700"
+              className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-slate-800 shadow-xs"
             >
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
               <span>Müşteri Onayını Şimdi Simüle Et</span>
             </button>
           </div>
