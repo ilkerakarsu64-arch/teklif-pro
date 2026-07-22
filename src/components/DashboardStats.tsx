@@ -15,11 +15,11 @@ import {
   ArrowRight,
   ShieldCheck,
   Laptop,
-  Coins,
   Eye,
   Settings as SettingsIcon,
   PlusCircle,
-  FileBarChart2
+  FileBarChart2,
+  Bell
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -62,7 +62,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
   const totalApprovedAmount = approvedProposals.reduce((sum, p) => sum + p.grandTotal, 0);
   const totalPendingAmount = pendingProposals.reduce((sum, p) => sum + p.grandTotal, 0);
-  const totalVolumeAmount = proposals.reduce((sum, p) => sum + p.grandTotal, 0);
 
   const conversionRate = totalCount > 0 
     ? Math.round((approvedProposals.length / totalCount) * 100) 
@@ -80,16 +79,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   // Online Viewed Proposals Count & Rate
   const viewedProposalsCount = proposals.filter(p => p.status === 'INCELENIYOR' || p.status === 'ONAYLANDI' || p.viewedAt).length;
   const viewRate = totalCount > 0 ? Math.round((viewedProposalsCount / totalCount) * 100) : 0;
-
-  // Multi-Currency Breakdown
-  const currencyTotals = useMemo(() => {
-    const map = { TRY: 0, USD: 0, EUR: 0, GBP: 0 };
-    proposals.forEach(p => {
-      const c = p.currency || 'TRY';
-      map[c] = (map[c] || 0) + p.grandTotal;
-    });
-    return map;
-  }, [proposals]);
 
   // Expiring Soon Proposals (within 5 days)
   const expiringProposals = useMemo(() => {
@@ -156,46 +145,42 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   const goalProgressPercent = Math.min(100, Math.round((totalApprovedAmount / monthlyGoal) * 100));
 
   return (
-    <div className="space-y-8 antialiased">
+    <div className="space-y-6 antialiased">
       
       {/* ------------------------------------------------------------- */}
-      {/* Top Executive Header Banner                                   */}
+      {/* Top Header & Quick Actions (Matches DetailedReports Style)     */}
       {/* ------------------------------------------------------------- */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white rounded-2xl p-6 sm:p-8 border border-blue-500 shadow-xl relative overflow-hidden">
-        {/* Subtle Background Glow Accent */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-72 h-72 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[11px] font-mono font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-              <span>TeklifPRO Kurumsal Kontrol & Otomasyon Merkezi</span>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-600">
+              <Sparkles className="w-4 h-4" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
               Yönetici Kontrol Paneli
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Müşterilerinize e-posta ile teklif iletin. Müşteriniz e-postayı açıp online onay verdiğinde veya reddettiğinde canlı bildirim panelinizde anında takip edin.
-            </p>
           </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Müşteri tekliflerinizi, onay durumlarını, cihaz metriklerini ve finansal ciro akışınızı canlı takip edin.
+          </p>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <button
-              onClick={onOpenCustomerSimulator}
-              className="px-4 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs tracking-wide transition-all shadow-md flex items-center gap-2 border border-amber-400/50 cursor-pointer active:scale-95"
-            >
-              <Zap className="w-4 h-4 fill-slate-950" />
-              <span>Canlı Bildirim Test Et</span>
-            </button>
-            <button
-              onClick={onNewProposal}
-              className="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs tracking-wide transition-all shadow-md border border-blue-500/50 cursor-pointer active:scale-95"
-            >
-              + Yeni Teklif Oluştur
-            </button>
-          </div>
+        {/* Action Buttons Header */}
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <button
+            onClick={onOpenCustomerSimulator}
+            className="px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition-colors shadow-xs flex items-center gap-1.5 border border-amber-400 cursor-pointer"
+          >
+            <Zap className="w-3.5 h-3.5 fill-slate-950" />
+            <span>Canlı Bildirimi Test Et</span>
+          </button>
+          <button
+            onClick={onNewProposal}
+            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors shadow-xs flex items-center gap-1.5 border border-blue-500 cursor-pointer"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Yeni Teklif Oluştur</span>
+          </button>
         </div>
       </div>
 
@@ -203,23 +188,23 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Expiring Soon Alert Bar (If Any)                              */}
       {/* ------------------------------------------------------------- */}
       {expiringProposals.length > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-600 shrink-0">
+            <div className="p-2 rounded-lg bg-amber-100 text-amber-700 shrink-0 border border-amber-200">
               <AlertTriangle className="w-4 h-4" />
             </div>
             <div>
-              <span className="font-bold text-slate-900 dark:text-slate-100 block">
+              <span className="font-bold text-slate-900 block">
                 {expiringProposals.length} adet teklifin son geçerlilik tarihi yaklaşıyor!
               </span>
-              <span className="text-slate-600 dark:text-slate-400">
+              <span className="text-slate-600">
                 Müşterilerinizle iletişime geçip teklif onay durumunu hızlandırabilirsiniz.
               </span>
             </div>
           </div>
           <button
             onClick={() => onSelectProposal(expiringProposals[0].id)}
-            className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
+            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs transition-colors shrink-0 flex items-center gap-1 cursor-pointer shadow-xs"
           >
             <span>İncele</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -233,79 +218,79 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <button
           onClick={onNewProposal}
-          className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
+          className="p-3.5 bg-white border border-slate-200 hover:border-blue-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
         >
-          <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+          <div className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 group-hover:scale-105 transition-transform">
             <PlusCircle className="w-4 h-4" />
           </div>
           <div>
-            <div className="font-bold text-xs text-slate-900 dark:text-slate-100">Hızlı Teklif Ekle</div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400">Yeni teklif formu aç</div>
+            <div className="font-bold text-xs text-slate-900">Hızlı Teklif Ekle</div>
+            <div className="text-[10px] text-slate-500">Yeni teklif formu aç</div>
           </div>
         </button>
 
         {onOpenReports && (
           <button
             onClick={onOpenReports}
-            className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
+            className="p-3.5 bg-white border border-slate-200 hover:border-emerald-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
           >
-            <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 group-hover:scale-105 transition-transform">
               <FileBarChart2 className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-bold text-xs text-slate-900 dark:text-slate-100">Detaylı Raporlar</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400">Finansal analiz ve tablo</div>
+              <div className="font-bold text-xs text-slate-900">Detaylı Raporlar</div>
+              <div className="text-[10px] text-slate-500">Finansal analiz ve tablo</div>
             </div>
           </button>
         )}
 
         <button
           onClick={onOpenCustomerSimulator}
-          className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-amber-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
+          className="p-3.5 bg-white border border-slate-200 hover:border-amber-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
         >
-          <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
+          <div className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100 group-hover:scale-105 transition-transform">
             <Zap className="w-4 h-4 fill-amber-500" />
           </div>
           <div>
-            <div className="font-bold text-xs text-slate-900 dark:text-slate-100">Müşteri Simülatörü</div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400">Onay bildirim testi</div>
+            <div className="font-bold text-xs text-slate-900">Müşteri Simülatörü</div>
+            <div className="text-[10px] text-slate-500">Onay bildirim testi</div>
           </div>
         </button>
 
         {onOpenSettings && (
           <button
             onClick={onOpenSettings}
-            className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
+            className="p-3.5 bg-white border border-slate-200 hover:border-purple-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
           >
-            <div className="p-2.5 rounded-lg bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
+            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg border border-purple-100 group-hover:scale-105 transition-transform">
               <SettingsIcon className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-bold text-xs text-slate-900 dark:text-slate-100">Sistem Ayarları</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400">Firma & İnternet URL</div>
+              <div className="font-bold text-xs text-slate-900">Sistem Ayarları</div>
+              <div className="text-[10px] text-slate-500">Firma & İnternet URL</div>
             </div>
           </button>
         )}
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* Key Metric KPI Cards Grid                                      */}
+      {/* Key Metric KPI Cards Grid (Matches DetailedReports Style)      */}
       {/* ------------------------------------------------------------- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Approved Revenue Card */}
-        <div className="bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-4 hover:border-emerald-400 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-emerald-300 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Onaylanan Ciro</span>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-              <CheckCircle2 className="w-5 h-5" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Onaylanan Ciro</span>
+            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100">
+              <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono tracking-tight">
+            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
               {formatCurrency(totalApprovedAmount, 'TRY')}
             </div>
-            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-emerald-600 font-semibold">
               <span>{approvedProposals.length} Onaylı Teklif</span>
               <TrendingUp className="w-4 h-4" />
             </div>
@@ -313,58 +298,58 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
 
         {/* Pending Opportunities Card */}
-        <div className="bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-4 hover:border-amber-400 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-amber-300 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Onay Bekleyen</span>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400">
-              <Clock className="w-5 h-5" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Onay Bekleyen</span>
+            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100">
+              <Clock className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono tracking-tight">
+            <div className="text-2xl font-black text-amber-600 font-mono tracking-tight">
               {pendingProposals.length} Teklif
             </div>
-            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
               <span>Bekleyen Tutar</span>
-              <span className="font-semibold text-slate-800 dark:text-slate-200 font-mono">{formatCurrency(totalPendingAmount, 'TRY')}</span>
+              <span className="font-semibold text-slate-800 font-mono">{formatCurrency(totalPendingAmount, 'TRY')}</span>
             </div>
           </div>
         </div>
 
         {/* Total Proposal Volume & Conversion Rate */}
-        <div className="bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-4 hover:border-blue-400 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-blue-300 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Toplam Teklif & Oran</span>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <FileText className="w-5 h-5" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Toplam Teklif & Oran</span>
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
+              <FileText className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono tracking-tight">
+            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
               {totalCount} Adet
             </div>
-            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
               <span>Kazanma Oranı</span>
-              <span className="font-bold text-blue-600 dark:text-blue-400 font-mono">%{conversionRate}</span>
+              <span className="font-bold text-blue-600 font-mono">%{conversionRate}</span>
             </div>
           </div>
         </div>
 
         {/* Devices & Kalem Metrics Card */}
-        <div className="bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-4 hover:border-purple-400 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-purple-300 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Cihaz & İşlem Kalemi</span>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 flex items-center justify-center text-purple-600 dark:text-purple-400">
-              <Laptop className="w-5 h-5" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Cihaz & İşlem Kalemi</span>
+            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg border border-purple-100">
+              <Laptop className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono tracking-tight">
+            <div className="text-2xl font-black text-purple-600 font-mono tracking-tight">
               {totalDevicesCount} Cihaz
             </div>
-            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
               <span>Toplam Hizmet Kalemi</span>
-              <span className="font-bold text-purple-600 dark:text-purple-300 font-mono">{totalItemsCount} Kalem</span>
+              <span className="font-bold text-purple-600 font-mono">{totalItemsCount} Kalem</span>
             </div>
           </div>
         </div>
@@ -374,55 +359,55 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* ------------------------------------------------------------- */}
       {/* Target Revenue Progress & Online View Rates                   */}
       {/* ------------------------------------------------------------- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Monthly Target Progress */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <span className="font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">Aylık Ciro Hedefi Performansı</span>
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
+              <span className="font-bold text-slate-900 uppercase tracking-wider">Aylık Ciro Hedefi Performansı</span>
             </div>
-            <div className="font-mono text-slate-700 dark:text-slate-300">
-              <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{formatCurrency(totalApprovedAmount, 'TRY')}</strong> / {formatCurrency(monthlyGoal, 'TRY')}
+            <div className="font-mono text-slate-700">
+              <strong className="text-emerald-600 font-bold">{formatCurrency(totalApprovedAmount, 'TRY')}</strong> / {formatCurrency(monthlyGoal, 'TRY')}
             </div>
           </div>
 
-          <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200 dark:border-slate-700">
+          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
             <div 
               className="h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full transition-all duration-1000"
               style={{ width: `${goalProgressPercent}%` }}
             />
           </div>
           
-          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
             <span>Hedef Tamamlanma Oranı</span>
-            <span className="font-bold text-slate-900 dark:text-slate-100 font-mono">%{goalProgressPercent}</span>
+            <span className="font-bold text-slate-900 font-mono">%{goalProgressPercent}</span>
           </div>
         </div>
 
         {/* Customer Online View Rate Meter */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
               <Eye className="w-4 h-4 text-amber-500" />
-              <span className="font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">Müşteri Online İnceleme Etkileşimi</span>
+              <span className="font-bold text-slate-900 uppercase tracking-wider">Müşteri Online İnceleme Etkileşimi</span>
             </div>
-            <div className="font-mono text-slate-700 dark:text-slate-300">
-              <strong className="text-amber-600 dark:text-amber-400 font-bold">{viewedProposalsCount}</strong> / {totalCount} Teklif İncenlendi
+            <div className="font-mono text-slate-700">
+              <strong className="text-amber-600 font-bold">{viewedProposalsCount}</strong> / {totalCount} Teklif İncenlendi
             </div>
           </div>
 
-          <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200 dark:border-slate-700">
+          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
             <div 
               className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-1000"
               style={{ width: `${viewRate}%` }}
             />
           </div>
           
-          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
             <span>Müşteri İnceleme Oranı</span>
-            <span className="font-bold text-amber-600 dark:text-amber-400 font-mono">%{viewRate}</span>
+            <span className="font-bold text-amber-600 font-mono">%{viewRate}</span>
           </div>
         </div>
 
@@ -434,11 +419,11 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Revenue Trend Area Chart (8 cols) */}
-        <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2 uppercase">
-                <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 uppercase">
+                <BarChart3 className="w-4 h-4 text-emerald-600" />
                 <span>Son 30 Günlük Ciro ve Teklif Hacim Trendi</span>
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -449,11 +434,11 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             <div className="flex items-center gap-4 text-xs font-semibold">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                <span className="text-slate-700 dark:text-slate-300">Onaylanan Ciro</span>
+                <span className="text-slate-700">Onaylanan Ciro</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-blue-400 inline-block"></span>
-                <span className="text-slate-700 dark:text-slate-300">Toplam Hacim</span>
+                <span className="text-slate-700">Toplam Hacim</span>
               </div>
             </div>
           </div>
@@ -514,10 +499,10 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
 
         {/* Status Breakdown Chart (4 cols) */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-xs flex flex-col justify-between">
-          <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2 uppercase">
-              <PieChartIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-xs flex flex-col justify-between">
+          <div className="border-b border-slate-100 pb-3">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 uppercase">
+              <PieChartIcon className="w-4 h-4 text-blue-600" />
               <span>Teklif Onay & Durum Oranları</span>
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -554,28 +539,28 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             
             {/* Inner Center Stat */}
             <div className="absolute text-center pointer-events-none">
-              <div className="text-xl font-bold font-mono text-slate-900 dark:text-slate-100">%{conversionRate}</div>
+              <div className="text-xl font-bold font-mono text-slate-900">%{conversionRate}</div>
               <div className="text-[10px] uppercase font-bold text-slate-400">Onay Oranı</div>
             </div>
           </div>
 
           {/* Legend Items */}
-          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              <span className="text-slate-600 dark:text-slate-300 font-semibold">{approvedProposals.length} Onaylı</span>
+              <span className="text-slate-600 font-semibold">{approvedProposals.length} Onaylı</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-              <span className="text-slate-600 dark:text-slate-300 font-semibold">{pendingProposals.length} Bekleyen</span>
+              <span className="text-slate-600 font-semibold">{pendingProposals.length} Bekleyen</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-              <span className="text-slate-600 dark:text-slate-300 font-semibold">{rejectedProposals.length} Red</span>
+              <span className="text-slate-600 font-semibold">{rejectedProposals.length} Red</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
-              <span className="text-slate-600 dark:text-slate-300 font-semibold">{draftProposals.length} Taslak</span>
+              <span className="text-slate-600 font-semibold">{draftProposals.length} Taslak</span>
             </div>
           </div>
         </div>
@@ -585,18 +570,18 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* ------------------------------------------------------------- */}
       {/* Main Grid: Recent Proposals & Live Notifications              */}
       {/* ------------------------------------------------------------- */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Column: Recent Proposals (8 cols) */}
-        <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs flex flex-col overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-xs flex flex-col overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <div>
-              <h2 className="font-bold text-slate-900 dark:text-slate-100 text-sm tracking-tight uppercase">Son Oluşturulan Teklifler</h2>
+              <h2 className="font-bold text-slate-900 text-sm tracking-tight uppercase">Son Oluşturulan Teklifler</h2>
               <p className="text-xs text-slate-400">Güncel müşteri teklif listesi ve canlı onay durumları</p>
             </div>
             <button 
               onClick={onNewProposal} 
-              className="text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest hover:underline cursor-pointer"
+              className="text-xs text-blue-600 font-bold uppercase tracking-widest hover:underline cursor-pointer"
             >
               + Teklif Ekle
             </button>
@@ -610,34 +595,34 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             <div className="flex-1 overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-950/60 font-bold">
+                  <tr className="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-100/50 font-bold">
                     <th className="px-6 py-3">Teklif / Müşteri</th>
                     <th className="px-6 py-3">Tarih</th>
                     <th className="px-6 py-3">Tutar</th>
                     <th className="px-6 py-3">Durum</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-slate-100">
                   {proposals.slice(0, 6).map((proposal) => (
                     <tr
                       key={proposal.id}
                       onClick={() => onSelectProposal(proposal.id)}
-                      className="hover:bg-blue-50/50 dark:hover:bg-blue-950/30 cursor-pointer transition-colors"
+                      className="hover:bg-blue-50/50 cursor-pointer transition-colors"
                     >
                       <td className="px-6 py-4">
-                        <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                          <span className="text-blue-600 dark:text-blue-400 font-mono font-bold">{proposal.proposalNumber}</span>
+                        <div className="font-bold text-slate-900 flex items-center gap-2">
+                          <span className="text-blue-600 font-mono font-bold">{proposal.proposalNumber}</span>
                           <span>•</span>
                           <span className="truncate">{proposal.customer.companyName || proposal.customer.name}</span>
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{proposal.title}</div>
+                        <div className="text-xs text-slate-500 truncate mt-0.5">{proposal.title}</div>
                       </td>
 
-                      <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap">
+                      <td className="px-6 py-4 text-slate-600 font-mono whitespace-nowrap">
                         {formatDate(proposal.issueDate)}
                       </td>
 
-                      <td className="px-6 py-4 font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                      <td className="px-6 py-4 font-mono font-bold text-slate-900 whitespace-nowrap">
                         {formatCurrency(proposal.grandTotal, proposal.currency)}
                       </td>
 
@@ -677,13 +662,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
 
         {/* Right Column: Real-time Notifications Feed (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
-          <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-900 text-white">
-            <h3 className="font-bold text-xs uppercase tracking-widest text-slate-100 flex items-center gap-2">
-              <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+        <div className="lg:col-span-4 flex flex-col bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+          <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <h3 className="font-bold text-xs uppercase tracking-widest text-slate-900 flex items-center gap-2">
+              <Bell className="w-4 h-4 text-blue-600" />
               <span>Canlı Bildirim Akışı</span>
             </h3>
-            <span className="bg-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">CANLI</span>
+            <span className="bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">CANLI</span>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[420px]">
@@ -693,26 +678,26 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
               </div>
             ) : (
               notifications.slice(0, 6).map((notif) => {
-                let borderClass = "border-l-4 border-slate-300 bg-slate-50 dark:bg-slate-800/60";
+                let borderClass = "border-l-4 border-slate-300 bg-slate-50";
                 let typeText = "SİSTEM MESAJI";
-                let typeColor = "text-slate-600 dark:text-slate-300";
+                let typeColor = "text-slate-600";
 
                 if (notif.type === 'ONAY') {
-                  borderClass = "border-l-4 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30";
+                  borderClass = "border-l-4 border-emerald-500 bg-emerald-50/50";
                   typeText = "TEKLİF ONAYLANDI";
-                  typeColor = "text-emerald-700 dark:text-emerald-300";
+                  typeColor = "text-emerald-700";
                 } else if (notif.type === 'RET') {
-                  borderClass = "border-l-4 border-rose-500 bg-rose-50/50 dark:bg-rose-950/30";
+                  borderClass = "border-l-4 border-rose-500 bg-rose-50/50";
                   typeText = "TEKLİF REDDEDİLDİ";
-                  typeColor = "text-rose-700 dark:text-rose-300";
+                  typeColor = "text-rose-700";
                 } else if (notif.type === 'GORUNTULEME') {
-                  borderClass = "border-l-4 border-blue-500 bg-blue-50/50 dark:bg-blue-950/30";
+                  borderClass = "border-l-4 border-blue-500 bg-blue-50/50";
                   typeText = "TEKLİF GÖRÜLDÜ";
-                  typeColor = "text-blue-700 dark:text-blue-300";
+                  typeColor = "text-blue-700";
                 } else if (notif.type === 'EPOSTA_GONDERILDI') {
-                  borderClass = "border-l-4 border-amber-500 bg-amber-50/50 dark:bg-amber-950/30";
+                  borderClass = "border-l-4 border-amber-500 bg-amber-50/50";
                   typeText = "E-POSTA İLETİLDİ";
-                  typeColor = "text-amber-700 dark:text-amber-300";
+                  typeColor = "text-amber-700";
                 }
 
                 return (
@@ -730,13 +715,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                       </span>
                     </div>
 
-                    <p className="text-slate-800 dark:text-slate-200 font-medium leading-snug">
+                    <p className="text-slate-800 font-medium leading-snug">
                       {notif.message}
                     </p>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-200/50">
                       <span>{notif.customerName}</span>
-                      <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{notif.proposalNumber}</span>
+                      <span className="font-mono font-bold text-blue-600">{notif.proposalNumber}</span>
                     </div>
                   </div>
                 );
@@ -744,12 +729,12 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             )}
           </div>
 
-          <div className="p-4 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-100 dark:border-slate-800">
+          <div className="p-4 bg-slate-50 border-t border-slate-200">
             <button
               onClick={onOpenCustomerSimulator}
-              className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-slate-800 shadow-xs cursor-pointer"
+              className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-amber-400 shadow-xs cursor-pointer"
             >
-              <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+              <Zap className="w-3.5 h-3.5 fill-slate-950" />
               <span>Müşteri Onayını Şimdi Simüle Et</span>
             </button>
           </div>
