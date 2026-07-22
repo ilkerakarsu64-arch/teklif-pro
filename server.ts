@@ -557,33 +557,23 @@ async function startServer() {
         let transporter: nodemailer.Transporter;
 
         if (smtpHost && smtpUser && smtpPass) {
-          // Real SMTP Server
+          // Real SMTP Server with connection timeouts
           deliveryMethod = 'SMTP';
           transporter = nodemailer.createTransport({
             host: smtpHost,
             port: smtpPort,
             secure: smtpSecure,
-            auth: { user: smtpUser, pass: smtpPass }
+            auth: { user: smtpUser, pass: smtpPass },
+            connectionTimeout: 5000,
+            greetingTimeout: 5000,
+            socketTimeout: 5000
           });
         } else {
-          // Automatic Ethereal test account for development/preview testing
-          deliveryMethod = 'ETHEREAL_TEST';
-          try {
-            const testAccount = await nodemailer.createTestAccount();
-            transporter = nodemailer.createTransport({
-              host: 'smtp.ethereal.email',
-              port: 587,
-              secure: false,
-              auth: {
-                user: testAccount.user,
-                pass: testAccount.pass
-              }
-            });
-          } catch {
-            transporter = nodemailer.createTransport({
-              jsonTransport: true
-            });
-          }
+          // Fast instant transport (Prevents network hang or freeze)
+          deliveryMethod = 'SIMULATED';
+          transporter = nodemailer.createTransport({
+            jsonTransport: true
+          });
         }
 
         const mailInfo = await transporter.sendMail({

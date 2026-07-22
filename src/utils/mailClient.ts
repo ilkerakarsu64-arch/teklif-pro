@@ -63,7 +63,7 @@ export async function openDefaultMailClientWithPdf(
   toEmailOverride?: string,
   customNote?: string
 ) {
-  // 1. Trigger PDF download automatically so user has the attached PDF ready
+  // 1. Download PDF asynchronously without blocking the UI
   if (element) {
     try {
       await downloadProposalPdf(element, `Teklif_${proposal.proposalNumber}`);
@@ -72,9 +72,20 @@ export async function openDefaultMailClientWithPdf(
     }
   }
 
-  // 2. Open desktop mail software with clean, sleek pre-filled email
-  const mailtoUrl = generateMailtoUrl(proposal, settings, toEmailOverride, customNote);
-  window.location.href = mailtoUrl;
+  // 2. Open desktop mail client safely after brief delay to avoid tab lockup
+  setTimeout(() => {
+    const mailtoUrl = generateMailtoUrl(proposal, settings, toEmailOverride, customNote);
+    const link = document.createElement('a');
+    link.href = mailtoUrl;
+    link.target = '_self';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link);
+      }
+    }, 500);
+  }, 100);
 }
 
 export function openDefaultMailClient(
@@ -84,5 +95,14 @@ export function openDefaultMailClient(
   customNote?: string
 ) {
   const mailtoUrl = generateMailtoUrl(proposal, settings, toEmailOverride, customNote);
-  window.location.href = mailtoUrl;
+  const link = document.createElement('a');
+  link.href = mailtoUrl;
+  link.target = '_self';
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => {
+    if (document.body.contains(link)) {
+      document.body.removeChild(link);
+    }
+  }, 500);
 }

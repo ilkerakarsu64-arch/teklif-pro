@@ -28,6 +28,20 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   const [isSending, setIsSending] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
   const [sendResult, setSendResult] = useState<{ deliveryMethod?: string; testPreviewUrl?: string; errorMessage?: string } | null>(null);
+  const [isOpeningMailClient, setIsOpeningMailClient] = useState(false);
+
+  const handleOpenMailClient = async () => {
+    setIsOpeningMailClient(true);
+    try {
+      const paperElement = document.getElementById('proposal-paper-container');
+      await openDefaultMailClientWithPdf(proposal, paperElement, settings, toEmail, customMessage);
+    } catch (err) {
+      console.error('Mail client open error:', err);
+    } finally {
+      setIsOpeningMailClient(false);
+      onClose();
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -216,15 +230,13 @@ export const EmailModal: React.FC<EmailModalProps> = ({
             <div className="flex flex-col sm:flex-row justify-between items-center gap-2 pt-3 border-t border-slate-200">
               <button
                 type="button"
-                onClick={() => {
-                  const paperElement = document.getElementById('proposal-paper-container');
-                  openDefaultMailClientWithPdf(proposal, paperElement, settings, toEmail, customMessage);
-                }}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-sm bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 border border-amber-400 shadow-xs transition-colors"
+                disabled={isOpeningMailClient || isSending}
+                onClick={handleOpenMailClient}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-sm bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 border border-amber-400 shadow-xs transition-colors"
                 title="Teklif PDF belgesini indirir ve bilgisayarınızdaki varsayılan mail uygulamasını (Outlook) çalıştırır"
               >
                 <ExternalLink className="w-4 h-4" />
-                <span>Mail Programında Aç + PDF İndir (Outlook)</span>
+                <span>{isOpeningMailClient ? 'Hazırlanıyor...' : 'Mail Programında Aç + PDF İndir (Outlook)'}</span>
               </button>
 
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
