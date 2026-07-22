@@ -238,70 +238,7 @@ async function initializeDatabase() {
     }
   }
 
-  // Seed Proposals
-  const proposalCount = await d.get("SELECT COUNT(*) as count FROM proposals");
-  if ((proposalCount as any).count === 0) {
-    for (const p of initialProposals) {
-      await d.run(
-        `INSERT INTO proposals (
-          id, proposalNumber, title, customerId, customerJson, itemsJson, devicesJson,
-          issueDate, validUntilDate, currency, notes, paymentTerms, status, subtotal,
-          totalTax, totalDiscount, grandTotal, createdAt, updatedAt, sentAt, viewedAt,
-          respondedAt, customerResponseNote, rejectionReason, customerSignature, historyJson
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        p.id,
-        p.proposalNumber,
-        p.title,
-        p.customer.id,
-        JSON.stringify(p.customer),
-        JSON.stringify(p.items),
-        p.devices ? JSON.stringify(p.devices) : null,
-        p.issueDate,
-        p.validUntilDate,
-        p.currency,
-        p.notes,
-        p.paymentTerms,
-        p.status,
-        p.subtotal,
-        p.totalTax,
-        p.totalDiscount,
-        p.grandTotal,
-        p.createdAt || new Date().toISOString(),
-        p.updatedAt || new Date().toISOString(),
-        p.sentAt || null,
-        p.viewedAt || null,
-        p.respondedAt || null,
-        p.customerResponseNote || null,
-        p.rejectionReason || null,
-        p.customerSignature || null,
-        JSON.stringify(p.history)
-      );
-    }
-  }
-
-  // Seed Notifications
-  const notifCount = await d.get("SELECT COUNT(*) as count FROM notifications");
-  if ((notifCount as any).count === 0) {
-    for (const n of initialNotifications) {
-      await d.run(
-        `INSERT INTO notifications (
-          id, proposalId, proposalNumber, customerName, type, title, message, createdAt, isRead, amount, currency, customerNote
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        n.id,
-        n.proposalId,
-        n.proposalNumber,
-        n.customerName,
-        n.type,
-        n.title,
-        n.message,
-        n.createdAt,
-        n.isRead ? 1 : 0,
-        n.amount || null,
-        n.currency || null,
-        n.customerNote || null
-      );
-    }
-  }
+  // Demo proposals and notifications seeding removed permanently.
 
   // Seed Users
   const userCount = await d.get("SELECT COUNT(*) as count FROM users");
