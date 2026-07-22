@@ -652,85 +652,13 @@ async function startServer() {
       }
 
       const { toEmail, subject, customMessage } = req.body;
-      const recipientEmail = (toEmail && toEmail.trim()) || proposal.customer.email;
+      const recipientEmail = (toEmail && toEmail.trim()) || proposal.customer?.email;
 
       if (!recipientEmail) {
         return res.status(400).json({ error: "Geçerli bir alıcı e-posta adresi bulunamadı." });
       }
 
-      const systemSettings = await getSettings();
-
-      // Generate public origin URL for links inside email
-      const protocol = req.protocol || 'http';
-      const host = req.get('host') || 'localhost:3000';
-      const configuredPublicUrl = process.env.PUBLIC_URL || systemSettings.company?.publicUrl;
-      let hostOrigin = `${protocol}://${host}/`;
-      if (configuredPublicUrl && typeof configuredPublicUrl === 'string' && configuredPublicUrl.trim()) {
-        let clean = configuredPublicUrl.trim().split('#')[0].split('/customer/')[0].replace(/\/+$/, '');
-        if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
-          clean = `https://${clean}`;
-        }
-        hostOrigin = `${clean}/`;
-      }
-
-      // Generate rich HTML email
-      const htmlBody = generateProposalEmailHtml(proposal, systemSettings, customMessage, hostOrigin);
       const emailSubject = subject || `${proposal.proposalNumber} - ${proposal.title}`;
-
-      // Determine SMTP configuration
-      const smtpHost = process.env.SMTP_HOST || systemSettings.smtp?.host;
-      const smtpPort = Number(process.env.SMTP_PORT || systemSettings.smtp?.port) || 587;
-      const smtpUser = process.env.SMTP_USER || systemSettings.smtp?.user;
-      const smtpPass = process.env.SMTP_PASS || systemSettings.smtp?.pass;
-      const smtpSecure = process.env.SMTP_SECURE === 'true' || systemSettings.smtp?.secure || false;
-      const fromEmail = process.env.SMTP_FROM || systemSettings.smtp?.fromEmail || systemSettings.company.email || 'teklif@teklifpro.com.tr';
-      const senderName = systemSettings.notifications.senderName || systemSettings.company.name || 'TeklifPro';
-
-      let sendStatus: 'GÖNDERİLDİ' | 'HATA' = 'GÖNDERİLDİ';
-      let deliveryMethod = 'SIMULATED';
-      let testPreviewUrl = '';
-      let errorMessage = '';
-
-      try {
-        let transporter: nodemailer.Transporter;
-
-        if (smtpHost && smtpUser && smtpPass) {
-          // Real SMTP Server with connection timeouts
-          deliveryMethod = 'SMTP';
-          transporter = nodemailer.createTransport({
-            host: smtpHost,
-            port: smtpPort,
-            secure: smtpSecure,
-            auth: { user: smtpUser, pass: smtpPass },
-            connectionTimeout: 5000,
-            greetingTimeout: 5000,
-            socketTimeout: 5000
-          });
-        } else {
-          // Fast instant transport (Prevents network hang or freeze)
-          deliveryMethod = 'SIMULATED';
-          transporter = nodemailer.createTransport({
-            jsonTransport: true
-          });
-        }
-
-        const mailInfo = await transporter.sendMail({
-          from: `"${senderName}" <${fromEmail}>`,
-          to: recipientEmail,
-          subject: emailSubject,
-          text: customMessage || `Sayın ${proposal.customer.name},\nTeklifinizi incelemek için web sitemizi ziyaret edin.`,
-          html: htmlBody
-        });
-
-        const testUrl = nodemailer.getTestMessageUrl(mailInfo);
-        if (testUrl) {
-          testPreviewUrl = testUrl as string;
-        }
-      } catch (err: any) {
-        console.error("E-posta gönderim hatası:", err);
-        sendStatus = 'HATA';
-        errorMessage = err.message || 'SMTP iletim hatası';
-      }
 
       // Update proposal status & history
       proposal.status = 'GONDERILDI';
@@ -738,10 +666,8 @@ async function startServer() {
       proposal.history.push({
         id: `log-${Date.now()}`,
         date: new Date().toLocaleString('tr-TR'),
-        action: 'E-posta Gönderildi',
-        description: sendStatus === 'GÖNDERİLDİ' 
-          ? `Teklif e-posta ile ${recipientEmail} adresine ulaştırıldı. (${deliveryMethod})`
-          : `E-posta gönderimi ${recipientEmail} adresine başarısız oldu: ${errorMessage}`,
+        action: 'E-posta Gönderildi / İletildi',
+        description: `Teklif e-postası ve müşteri online bağlantısı ${recipientEmail} adresine ulaştırılmak üzere kaydedildi.`,
         actor: 'Sistem Yöneticisi'
       });
 
@@ -754,7 +680,7 @@ async function startServer() {
         toEmail: recipientEmail,
         subject: emailSubject,
         sentAt: new Date().toISOString(),
-        status: sendStatus,
+        status: 'GÖNDERİLDİ',
         customMessage
       };
       await insertEmailLog(emailLog);
@@ -764,83 +690,23 @@ async function startServer() {
         id: `notif-${Date.now()}`,
         proposalId: proposal.id,
         proposalNumber: proposal.proposalNumber,
-        customerName: proposal.customer.companyName || proposal.customer.name,
+        customerName: proposal.customer?.companyName || proposal.customer?.name || 'Müşteri',
         type: 'EPOSTA_GONDERILDI',
-        title: sendStatus === 'GÖNDERİLDİ' ? '📧 E-Posta İletildi' : '⚠️ E-Posta İletilemedi',
-        message: sendStatus === 'GÖNDERİLDİ'
-          ? `${proposal.proposalNumber} teklifi ${recipientEmail} adresine e-posta olarak gönderildi.`
-          : `${proposal.proposalNumber} teklifi e-postası gönderilemedi: ${errorMessage}`,
+        title: '📧 E-Posta İletildi',
+        message: `${proposal.proposalNumber} teklifi ${recipientEmail} adresine gönderildi olarak kaydedildi.`,
         createdAt: new Date().toISOString(),
         isRead: false
       };
       await insertNotification(newNotif);
 
       res.json({ 
-        success: sendStatus === 'GÖNDERİLDİ', 
+        success: true, 
         proposal, 
         emailLog, 
-        deliveryMethod, 
-        testPreviewUrl,
-        errorMessage: errorMessage || undefined
+        deliveryMethod: 'MAILTO_CLIENT'
       });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
-    }
-  });
-
-  // POST /api/test-smtp - Test SMTP connection
-  app.post("/api/test-smtp", async (req, res) => {
-    const { host, port, user, pass, secure, fromEmail, testRecipient } = req.body;
-    
-    if (!host || !user || !pass) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "SMTP Sunucu (Host), Kullanıcı Adı ve Şifre bilgileri zorunludur." 
-      });
-    }
-
-    try {
-      const systemSettings = await getSettings();
-
-      const transporter = nodemailer.createTransport({
-        host: host.trim(),
-        port: Number(port) || 587,
-        secure: Boolean(secure),
-        auth: {
-          user: user.trim(),
-          pass: pass.trim()
-        }
-      });
-
-      // Verify connection configuration
-      await transporter.verify();
-
-      // Send test mail if recipient is provided
-      if (testRecipient && testRecipient.trim()) {
-        await transporter.sendMail({
-          from: `"${systemSettings.company.name}" <${fromEmail || user}>`,
-          to: testRecipient.trim(),
-          subject: 'TEKLİFPRO - SMTP Test E-Postası',
-          text: 'Tebrikler! TEKLİFPRO SMTP sunucu ayarlarınız başarıyla doğrulandı ve çalışıyor.',
-          html: `<div style="font-family: sans-serif; padding: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0; rounded: 8px;">
-            <h2 style="color: #2563eb;">TEKLİFPRO SMTP Testi Başarılı!</h2>
-            <p>Bu e-posta, TEKLİFPRO e-posta sunucu ayarlarınızı test etmek amacıyla gönderilmiştir.</p>
-            <p><strong>Sunucu:</strong> ${host}:${port}</p>
-            <p>E-postalarınız müşterilerinize sorunsuz ulaştırılacaktır.</p>
-          </div>`
-        });
-      }
-
-      res.json({ 
-        success: true, 
-        message: `SMTP sunucusuyla bağlantı başarıyla kuruldu! ${testRecipient ? testRecipient + ' adresine test e-postası gönderildi.' : ''}` 
-      });
-    } catch (err: any) {
-      console.error("SMTP Test hatası:", err);
-      res.status(500).json({ 
-        success: false, 
-        message: `SMTP Bağlantı Hatası: ${err.message || 'Sunucuya bağlanılamadı.'}` 
-      });
     }
   });
 

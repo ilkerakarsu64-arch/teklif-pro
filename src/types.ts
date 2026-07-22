@@ -192,14 +192,6 @@ export interface AppSettings {
     senderName: string;
     emailSubjectTemplate: string;
   };
-  smtp?: {
-    host: string;
-    port: number;
-    user: string;
-    pass: string;
-    secure: boolean;
-    fromEmail: string;
-  };
   appearance: {
     theme: 'light' | 'dark' | 'system';
     compactView: boolean;

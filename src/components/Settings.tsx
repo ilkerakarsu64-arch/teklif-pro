@@ -57,11 +57,6 @@ export const Settings: React.FC<SettingsProps> = ({
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  // SMTP Test state
-  const [testingSmtp, setTestingSmtp] = useState(false);
-  const [smtpTestResult, setSmtpTestResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [testRecipientEmail, setTestRecipientEmail] = useState('');
-
   // Sync state if settings prop updates
   React.useEffect(() => {
     setFormData(settings);
@@ -99,55 +94,6 @@ export const Settings: React.FC<SettingsProps> = ({
       ...prev,
       notifications: { ...prev.notifications, [field]: value }
     }));
-  };
-
-  const handleSmtpChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      smtp: {
-        host: prev.smtp?.host || '',
-        port: prev.smtp?.port || 587,
-        user: prev.smtp?.user || '',
-        pass: prev.smtp?.pass || '',
-        secure: prev.smtp?.secure || false,
-        fromEmail: prev.smtp?.fromEmail || prev.company.email || '',
-        [field]: value
-      }
-    }));
-  };
-
-  const handleTestSmtpConnection = async () => {
-    const smtpData = formData.smtp || {
-      host: '',
-      port: 587,
-      user: '',
-      pass: '',
-      secure: false,
-      fromEmail: formData.company.email
-    };
-
-    setTestingSmtp(true);
-    setSmtpTestResult(null);
-
-    try {
-      const res = await fetch('/api/test-smtp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...smtpData,
-          testRecipient: testRecipientEmail || formData.company.email
-        })
-      });
-      const data = await res.json();
-      setSmtpTestResult(data);
-    } catch (err: any) {
-      setSmtpTestResult({
-        success: false,
-        message: err.message || 'SMTP sunucusuna bağlanırken hata oluştu.'
-      });
-    } finally {
-      setTestingSmtp(false);
-    }
   };
 
   const handleAppearanceChange = (field: keyof AppSettings['appearance'], value: any) => {
@@ -281,7 +227,7 @@ export const Settings: React.FC<SettingsProps> = ({
             }`}
           >
             <Bell className="w-4 h-4 shrink-0" />
-            <span>Bildirimler & E-Posta (SMTP)</span>
+            <span>Bildirimler & Ses Tercihleri</span>
           </button>
 
           <button
@@ -750,10 +696,10 @@ export const Settings: React.FC<SettingsProps> = ({
                 <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
                   <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                     <Bell className="w-4 h-4 text-blue-600" />
-                    <span>Canlı Bildirimler & SMTP E-Posta Servisi</span>
+                    <span>Canlı Bildirimler & Ses Tercihleri</span>
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Müşteri teklifi açtığında veya onayladığında anında tetiklenen ses ve visual uyarılar.
+                    Müşteri teklifi açtığında veya onayladığında anında tetiklenen ses ve görsel uyarılar.
                   </p>
                 </div>
 
@@ -830,135 +776,9 @@ export const Settings: React.FC<SettingsProps> = ({
                     </div>
                   </div>
 
-                  {/* SMTP Server Settings */}
-                  <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs uppercase tracking-wider flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-blue-600" />
-                          <span>SMTP E-Posta Sunucu Yapılandırması</span>
-                        </h3>
-                        <p className="text-[11px] text-slate-500">
-                          Teklif e-postalarının kendi kurumsal e-posta adresinizden gönderilmesi için SMTP sunucu bilgilerinizi girin.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-sm border border-slate-200 dark:border-slate-700 text-xs">
-                      <div className="sm:col-span-2">
-                        <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1 text-[11px]">
-                          SMTP Sunucu Adresi (Host) *
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Örn: smtp.gmail.com veya mail.sirketiniz.com"
-                          value={formData.smtp?.host || ''}
-                          onChange={(e) => handleSmtpChange('host', e.target.value)}
-                          className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100 text-xs"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1 text-[11px]">
-                          SMTP Port *
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="587 veya 465"
-                          value={formData.smtp?.port || 587}
-                          onChange={(e) => handleSmtpChange('port', Number(e.target.value))}
-                          className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100 text-xs"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1 text-[11px]">
-                          E-Posta Kullanıcı Adı *
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="teklif@sirketiniz.com"
-                          value={formData.smtp?.user || ''}
-                          onChange={(e) => handleSmtpChange('user', e.target.value)}
-                          className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100 text-xs"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1 text-[11px]">
-                          E-Posta Şifresi / Uygulama Şifresi *
-                        </label>
-                        <input
-                          type="password"
-                          placeholder="••••••••••••"
-                          value={formData.smtp?.pass || ''}
-                          onChange={(e) => handleSmtpChange('pass', e.target.value)}
-                          className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100 text-xs"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1 text-[11px]">
-                          Gönderen E-Posta Adresi (From)
-                        </label>
-                        <input
-                          type="email"
-                          placeholder={formData.company.email || 'teklif@sirketiniz.com'}
-                          value={formData.smtp?.fromEmail || ''}
-                          onChange={(e) => handleSmtpChange('fromEmail', e.target.value)}
-                          className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100 text-xs"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-3 flex items-center gap-2 pt-1">
-                        <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          <input
-                            type="checkbox"
-                            checked={formData.smtp?.secure || false}
-                            onChange={(e) => handleSmtpChange('secure', e.target.checked)}
-                            className="rounded-xs border-slate-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span>Güvenli SSL/TLS Bağlantısı (Port 465 için işaretleyin, 587 için kapalı bırakın)</span>
-                        </label>
-                      </div>
-
-                      {/* Test SMTP connection section */}
-                      <div className="sm:col-span-3 pt-3 border-t border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                          <input
-                            type="email"
-                            placeholder="Test e-postası alıcısı (Opsiyonel)"
-                            value={testRecipientEmail}
-                            onChange={(e) => setTestRecipientEmail(e.target.value)}
-                            className="p-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-xs w-full sm:w-64"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleTestSmtpConnection}
-                            disabled={testingSmtp}
-                            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs rounded-sm shrink-0 flex items-center gap-1.5 border border-slate-700 shadow-xs"
-                          >
-                            <Mail className="w-3.5 h-3.5" />
-                            <span>{testingSmtp ? 'Test Ediliyor...' : 'SMTP Bağlantısını Test Et'}</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {smtpTestResult && (
-                        <div className={`sm:col-span-3 p-2.5 rounded-sm text-xs font-semibold flex items-center gap-2 ${
-                          smtpTestResult.success 
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
-                            : 'bg-rose-50 text-rose-800 border border-rose-200'
-                        }`}>
-                           <span>{smtpTestResult.message}</span>
-                         </div>
-                       )}
- 
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             )}
+                </div>
+              </div>
+            )}
  
              {/* USER MANAGEMENT TAB */}
             {activeSubTab === 'users' && (
