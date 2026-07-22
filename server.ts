@@ -530,10 +530,13 @@ async function startServer() {
 
       const systemSettings = await getSettings();
 
-      // Generate origin URL for links inside email
+      // Generate public origin URL for links inside email
       const protocol = req.protocol || 'http';
       const host = req.get('host') || 'localhost:3000';
-      const hostOrigin = `${protocol}://${host}/`;
+      const configuredPublicUrl = process.env.PUBLIC_URL || systemSettings.company?.publicUrl;
+      const hostOrigin = configuredPublicUrl && configuredPublicUrl.trim()
+        ? configuredPublicUrl.trim().replace(/\/+$/, '') + '/'
+        : `${protocol}://${host}/`;
 
       // Generate rich HTML email
       const htmlBody = generateProposalEmailHtml(proposal, systemSettings, customMessage, hostOrigin);

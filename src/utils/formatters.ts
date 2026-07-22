@@ -192,3 +192,19 @@ export function copyToClipboard(text: string): boolean {
     return false;
   }
 }
+
+export function getPublicPortalUrl(proposalId: string, settings?: any): string {
+  const publicUrl = settings?.company?.publicUrl;
+  if (publicUrl && typeof publicUrl === 'string' && publicUrl.trim()) {
+    const baseUrl = publicUrl.trim().replace(/\/+$/, '');
+    return `${baseUrl}/#/customer/teklif/${proposalId}`;
+  }
+
+  if (typeof window !== 'undefined' && window.location) {
+    const origin = window.location.origin;
+    const pathname = window.location.pathname;
+    return `${origin}${pathname}#/customer/teklif/${proposalId}`;
+  }
+
+  return `http://localhost:3000/#/customer/teklif/${proposalId}`;
+}

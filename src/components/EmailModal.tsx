@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Proposal, AppSettings } from '../types';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, getPublicPortalUrl } from '../utils/formatters';
 import { openDefaultMailClientWithPdf } from '../utils/mailClient';
 import { Mail, Send, X, CheckCircle2, ExternalLink, Paperclip } from 'lucide-react';
 
@@ -60,7 +60,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
     }
   };
 
-  const portalUrl = `${window.location.origin}${window.location.pathname}#/customer/teklif/${proposal.id}`;
+  const portalUrl = getPublicPortalUrl(proposal.id, settings);
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">

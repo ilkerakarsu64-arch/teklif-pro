@@ -145,6 +145,7 @@ export interface AppSettings {
     taxOffice: string;
     taxNumber: string;
     website: string;
+    publicUrl?: string;
     logoText: string;
     logoUrl?: string;
     bankName?: string;

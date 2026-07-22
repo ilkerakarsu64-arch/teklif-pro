@@ -1,5 +1,5 @@
 import { Proposal, AppSettings } from '../types';
-import { formatCurrency, formatDate } from './formatters';
+import { formatCurrency, formatDate, getPublicPortalUrl } from './formatters';
 import { downloadProposalPdf } from './pdfDownloader';
 
 export function generateSleekEmailText(
@@ -10,7 +10,7 @@ export function generateSleekEmailText(
   const companyName = settings?.company?.name || 'TEKLİFPRO DİJİTAL A.Ş.';
   const companyPhone = settings?.company?.phone || '';
   const companyWebsite = settings?.company?.website || '';
-  const portalUrl = `${window.location.origin}${window.location.pathname}#/customer/teklif/${proposal.id}`;
+  const portalUrl = getPublicPortalUrl(proposal.id, settings);
 
   let body = `Sayın ${proposal.customer.name || proposal.customer.companyName},\n\n`;
 

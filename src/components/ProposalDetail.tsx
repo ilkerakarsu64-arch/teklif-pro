@@ -1,7 +1,7 @@
 import React from 'react';
 import { Proposal, AppSettings, User } from '../types';
 import { getUserPermissions } from '../utils/auth';
-import { formatCurrency, formatDate, formatDateTime, getStatusBadgeConfig, copyToClipboard } from '../utils/formatters';
+import { formatCurrency, formatDate, formatDateTime, getStatusBadgeConfig, copyToClipboard, getPublicPortalUrl } from '../utils/formatters';
 import { 
   ArrowLeft, 
   Send, 
@@ -204,7 +204,7 @@ export const ProposalDetail: React.FC<ProposalDetailProps> = ({
         }
       ];
 
-  const portalUrl = `${window.location.origin}${window.location.pathname}#/customer/teklif/${proposal.id}`;
+  const portalUrl = getPublicPortalUrl(proposal.id, settings);
 
   const copyCustomerLink = () => {
     copyToClipboard(portalUrl);

@@ -21,7 +21,8 @@ import {
   CreditCard,
   Sliders,
   Check,
-  Users
+  Users,
+  Globe
 } from 'lucide-react';
 
 interface SettingsProps {
@@ -412,6 +413,23 @@ export const Settings: React.FC<SettingsProps> = ({
                       value={formData.company.title}
                       onChange={(e) => handleCompanyChange('title', e.target.value)}
                       className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 bg-blue-50/70 dark:bg-blue-950/30 p-3.5 rounded-sm border border-blue-200 dark:border-blue-900 space-y-1.5">
+                    <label className="block font-bold text-blue-900 dark:text-blue-300 text-xs flex items-center gap-1.5">
+                      <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span>İnternet Erişim Adresi (Public Web URL)</span>
+                    </label>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Müşterilere gönderilen e-postalardaki ve linklerdeki teklif bağlantılarının internet üzerinden (dış ağlardan) erişilebilir olması için web adresi girin (Örn: <code className="bg-white dark:bg-slate-800 px-1 py-0.5 rounded font-mono font-bold text-blue-600">https://teklif-pro.onrender.com</code> veya localtunnel / ngrok adresi).
+                    </p>
+                    <input
+                      type="url"
+                      placeholder="https://teklif-pro.onrender.com"
+                      value={formData.company.publicUrl || ''}
+                      onChange={(e) => handleCompanyChange('publicUrl', e.target.value)}
+                      className="w-full p-2.5 bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-sm font-mono text-xs text-slate-900 dark:text-slate-100 font-bold"
                     />
                   </div>
 
