@@ -12,23 +12,19 @@ export function generateSleekEmailText(
   const companyWebsite = settings?.company?.website || '';
   const portalUrl = getPublicPortalUrl(proposal.id, settings);
 
-  let body = `Sayın ${proposal.customer.name || proposal.customer.companyName},\n\n`;
-
+  let body = '';
   if (customNote && customNote.trim()) {
     body += `${customNote.trim()}\n\n`;
   } else {
+    body += `Sayın ${proposal.customer.name || proposal.customer.companyName},\n\n`;
     body += `Sizler için hazırladığımız "${proposal.title}" projemize ait teklif belgemiz ve fiyatlandırma detaylarımız bilgilerinize sunulmuştur.\n\n`;
   }
 
-  body += `==================================================\n`;
-  body += `📄 TEKLİF DETAYLARI\n`;
-  body += `==================================================\n`;
   body += `• Teklif No       : ${proposal.proposalNumber}\n`;
   body += `• Proje Başlığı   : ${proposal.title}\n`;
   body += `• Düzenleme Tarihi: ${formatDate(proposal.issueDate)}\n`;
   body += `• Son Geçerlilik  : ${formatDate(proposal.validUntilDate)}\n`;
-  body += `• Toplam Tutar    : ${formatCurrency(proposal.grandTotal, proposal.currency)} (KDV Dahil)\n`;
-  body += `==================================================\n\n`;
+  body += `• Toplam Tutar    : ${formatCurrency(proposal.grandTotal, proposal.currency)} (KDV Dahil)\n\n`;
 
   body += `👉 Teklifi internet üzerinden incelemek ve çevrim içi onaylamak için aşağıdaki bağlantıya tıklayın:\n`;
   body += `${portalUrl}\n\n`;

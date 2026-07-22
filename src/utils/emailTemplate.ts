@@ -138,12 +138,8 @@ export function generateProposalEmailHtml(
             <td style="padding: 28px 32px;">
               
               <!-- Greeting & Note -->
-              <h2 style="margin-top: 0; font-size: 16px; color: #0f172a; font-weight: 700;">
-                Sayın ${proposal.customer.name || proposal.customer.companyName},
-              </h2>
-              
-              <div style="font-size: 13px; line-height: 1.6; color: #334155; margin-bottom: 24px; white-space: pre-line;">
-                ${customMessage || `Sayın ${proposal.customer.name},\n\nFirmanız (${proposal.customer.companyName || proposal.customer.name}) için hazırladığımız "${proposal.title}" başlıklı teklifimiz bilgilerinize sunulmuştur.`}
+              <div style="font-size: 14px; line-height: 1.65; color: #334155; margin-bottom: 24px; white-space: pre-line;">
+                ${customMessage || `Sayın ${proposal.customer.name || proposal.customer.companyName},\n\nFirmanız için hazırladığımız "${proposal.title}" başlıklı teklifimiz bilgilerinize sunulmuştur.`}
               </div>
 
               <!-- Main Call To Action Card -->
