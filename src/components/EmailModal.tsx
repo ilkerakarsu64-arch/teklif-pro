@@ -209,10 +209,14 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                     href={portalUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-3 py-1.5 bg-blue-600 text-white rounded-sm font-semibold text-xs inline-flex items-center gap-1 shadow-xs border border-blue-500"
-                    onClick={(e) => e.preventDefault()}
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-sm font-semibold text-xs inline-flex items-center gap-1.5 shadow-xs border border-blue-500 transition-colors cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.open(portalUrl, '_blank');
+                    }}
                   >
-                    Teklifi İncele & Onayla
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Teklifi İncele & Onayla</span>
                   </a>
                 </div>
               </div>
