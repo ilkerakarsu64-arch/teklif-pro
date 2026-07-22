@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Proposal, User } from '../types';
 import { getUserPermissions } from '../utils/auth';
 import { formatCurrency, formatDate, getStatusBadgeConfig } from '../utils/formatters';
+import { createAndSaveVectorPdf } from '../utils/pdfDownloader';
 import { 
   Search, 
   Plus, 
@@ -14,7 +15,8 @@ import {
   FileText,
   Mail,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Download
 } from 'lucide-react';
 
 interface ProposalListProps {
@@ -229,6 +231,18 @@ export const ProposalList: React.FC<ProposalListProps> = ({
                       <td className="py-4 px-6 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1.5">
                           
+                          {/* Quick PDF Creation */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              createAndSaveVectorPdf(prop);
+                            }}
+                            title="Vektörel PDF Oluştur ve İndir"
+                            className="p-1.5 rounded-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 border border-slate-200 transition-colors"
+                          >
+                            <Download className="w-4 h-4 text-emerald-600" />
+                          </button>
+
                           {/* Send Email */}
                           <button
                             onClick={() => onSendEmail(prop)}

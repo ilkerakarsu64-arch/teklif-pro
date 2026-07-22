@@ -1,4 +1,5 @@
 import html2pdf from 'html2pdf.js';
+export { createProposalPdfDocument, createAndSaveVectorPdf } from './pdfGenerator';
 
 export const downloadProposalPdf = async (element: HTMLElement | null, filename: string): Promise<void> => {
   if (!element) {
