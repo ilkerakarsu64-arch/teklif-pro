@@ -54,7 +54,11 @@ export const ProposalDetail: React.FC<ProposalDetailProps> = ({
   const handleDownloadPdf = async () => {
     setDownloadingPdf(true);
     try {
-      createAndSaveVectorPdf(proposal, settings);
+      if (proposalPaperRef.current) {
+        await downloadProposalPdf(proposalPaperRef.current, `Teklif_${proposal.proposalNumber}`);
+      } else {
+        createAndSaveVectorPdf(proposal, settings);
+      }
     } catch (err) {
       console.error('PDF download error:', err);
     } finally {

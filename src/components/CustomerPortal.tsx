@@ -46,7 +46,11 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     if (!proposal) return;
     setDownloadingPdf(true);
     try {
-      createAndSaveVectorPdf(proposal);
+      if (proposalPaperRef.current) {
+        await downloadProposalPdf(proposalPaperRef.current, `Teklif_${proposal.proposalNumber}`);
+      } else {
+        createAndSaveVectorPdf(proposal);
+      }
     } catch (err) {
       console.error('PDF download error:', err);
     } finally {
