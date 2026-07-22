@@ -8,6 +8,7 @@ import {
   MonitorPlay, 
   Users, 
   LayoutDashboard, 
+  BarChart3,
   Settings as SettingsIcon,
   LogOut,
   Menu,
@@ -16,8 +17,8 @@ import {
 } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: 'dashboard' | 'proposals' | 'customers' | 'settings';
-  setActiveTab: (tab: 'dashboard' | 'proposals' | 'customers' | 'settings') => void;
+  activeTab: 'dashboard' | 'proposals' | 'customers' | 'reports' | 'settings';
+  setActiveTab: (tab: 'dashboard' | 'proposals' | 'customers' | 'reports' | 'settings') => void;
   onNewProposal: () => void;
   unreadCount: number;
   onOpenNotifications: () => void;
@@ -39,7 +40,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const permissions = currentUser ? getUserPermissions(currentUser.role) : getUserPermissions('ADMIN');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleNavClick = (tab: 'dashboard' | 'proposals' | 'customers' | 'settings') => {
+  const handleNavClick = (tab: 'dashboard' | 'proposals' | 'customers' | 'reports' | 'settings') => {
     setActiveTab(tab);
     setMobileMenuOpen(false);
   };
@@ -61,6 +62,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       id: 'customers' as const,
       label: 'Müşteriler',
       icon: Users,
+      show: true
+    },
+    {
+      id: 'reports' as const,
+      label: 'Detaylı Raporlar',
+      icon: BarChart3,
       show: true
     },
     {

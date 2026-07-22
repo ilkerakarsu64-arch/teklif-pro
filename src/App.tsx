@@ -12,6 +12,7 @@ import { CustomerPortal } from './components/CustomerPortal';
 import { CustomerSimulatorModal } from './components/CustomerSimulatorModal';
 import { CustomerList } from './components/CustomerList';
 import { Settings } from './components/Settings';
+import { DetailedReports } from './components/DetailedReports';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { playNotificationSound, formatCurrency } from './utils/formatters';
 import { Bell, Sparkles, CheckCircle2, XCircle, Eye, Users, Plus, Mail, Building2, Phone, MapPin } from 'lucide-react';
@@ -82,7 +83,7 @@ function AppContent() {
   const { user, isAuthenticated, isLoading, login, logout, updateUser, setSession } = useAuth();
 
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'proposals' | 'customers' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'proposals' | 'customers' | 'reports' | 'settings'>('dashboard');
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -668,6 +669,16 @@ function AppContent() {
                 history: []
               });
               setIsFormOpen(true);
+              setActiveTab('proposals');
+            }}
+          />
+        ) : activeTab === 'reports' ? (
+          /* Detailed Reports Tab */
+          <DetailedReports
+            proposals={proposals}
+            customers={customers}
+            onSelectProposal={(id) => {
+              setSelectedProposalId(id);
               setActiveTab('proposals');
             }}
           />
