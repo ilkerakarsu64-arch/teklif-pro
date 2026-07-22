@@ -15,15 +15,14 @@ import {
   Upload, 
   Volume2, 
   VolumeX, 
-  Mail, 
-  ShieldCheck, 
   Printer,
   Sparkles,
   CreditCard,
-  Sliders,
-  Check,
   Users,
-  Globe
+  Globe,
+  Sliders,
+  ShieldCheck,
+  Check
 } from 'lucide-react';
 
 interface SettingsProps {
@@ -131,184 +130,219 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto antialiased">
       
-      {/* Page Title */}
-      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
-            <span>Sistem & Firma Ayarları</span>
-            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-sm bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800">
-              Detaylı Konfigürasyon
-            </span>
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Kurumsal firma bilgilerinizi, banka IBAN hesaplarınızı, teklif şablonlarını ve baskı tercihlerini yönetin.
-          </p>
+      {/* Vibrant Header Banner */}
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-6 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-inner shrink-0">
+            <Sliders className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-black tracking-tight">
+                Sistem & Firma Konfigürasyonu
+              </h1>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-white/20 text-white font-bold backdrop-blur-xs border border-white/30">
+                v2.5 Aktif
+              </span>
+            </div>
+            <p className="text-xs text-blue-100 mt-0.5">
+              Kurumsal firma bilgilerinizi, IBAN hesaplarınızı, teklif parametrelerinizi ve arayüz seçeneklerinizi yönetin.
+            </p>
+          </div>
         </div>
 
         <button
           onClick={handleSubmit}
           disabled={saving}
-          className="px-5 py-2.5 rounded-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors flex items-center gap-2 shadow-xs border border-blue-500"
+          className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-500/30 border border-emerald-400 cursor-pointer active:scale-95 shrink-0"
         >
           {savedSuccess ? (
             <>
-              <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-              <span>Kaydedildi!</span>
+              <CheckCircle2 className="w-4 h-4 text-white animate-bounce" />
+              <span>Ayarlar Kaydedildi!</span>
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              <span>{saving ? 'Kaydediliyor...' : 'Ayarları Kaydet'}</span>
+              <span>{saving ? 'Kaydediliyor...' : 'Tüm Ayarları Kaydet'}</span>
             </>
           )}
         </button>
       </div>
 
       {savedSuccess && (
-        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-sm text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Sistem ve firma ayarları başarıyla güncellendi ve kaydedildi.</span>
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border-2 border-emerald-300 dark:border-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2.5 shadow-md animate-in fade-in zoom-in-95 duration-200">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+          <span>Sistem ve kurumsal firma ayarları başarıyla güncellendi ve veritabanına kaydedildi.</span>
         </div>
       )}
 
-      {/* Main Settings Navigation & Body */}
+      {/* Main Settings Navigation & Form Card */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         
-        {/* Settings Sub-Menu Navigation */}
-        <div className="lg:col-span-1 space-y-1.5">
+        {/* Colorful Sub-Menu Navigation Tiles */}
+        <div className="lg:col-span-1 space-y-2">
+          
+          {/* 1. Firma Bilgileri */}
           <button
             type="button"
             onClick={() => setActiveSubTab('company')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-sm text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+            className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
               activeSubTab === 'company'
-                ? 'bg-blue-600 text-white font-bold shadow-2xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-500/25 scale-[1.02]'
+                : 'bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700/80 hover:border-blue-300 hover:translate-x-1'
             }`}
           >
-            <Building2 className="w-4 h-4 shrink-0" />
+            <div className={`p-1.5 rounded-lg shrink-0 ${activeSubTab === 'company' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400'}`}>
+              <Building2 className="w-4 h-4" />
+            </div>
             <span>Firma & Banka Bilgileri</span>
           </button>
 
+          {/* 2. Teklif Parametreleri */}
           <button
             type="button"
             onClick={() => setActiveSubTab('proposalDefaults')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-sm text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+            className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
               activeSubTab === 'proposalDefaults'
-                ? 'bg-blue-600 text-white font-bold shadow-2xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25 scale-[1.02]'
+                : 'bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700/80 hover:border-indigo-300 hover:translate-x-1'
             }`}
           >
-            <FileText className="w-4 h-4 shrink-0" />
-            <span>Teklif & Cihaz Parametreleri</span>
+            <div className={`p-1.5 rounded-lg shrink-0 ${activeSubTab === 'proposalDefaults' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400'}`}>
+              <FileText className="w-4 h-4" />
+            </div>
+            <span>Teklif Parametreleri</span>
           </button>
 
+          {/* 3. Baskı Görünümü */}
           <button
             type="button"
             onClick={() => setActiveSubTab('printOptions')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-sm text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+            className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
               activeSubTab === 'printOptions'
-                ? 'bg-blue-600 text-white font-bold shadow-2xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25 scale-[1.02]'
+                : 'bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700/80 hover:border-emerald-300 hover:translate-x-1'
             }`}
           >
-            <Printer className="w-4 h-4 shrink-0" />
-            <span>Baskı & Evrak Görünümü</span>
+            <div className={`p-1.5 rounded-lg shrink-0 ${activeSubTab === 'printOptions' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400'}`}>
+              <Printer className="w-4 h-4" />
+            </div>
+            <span>Baskı & Evrak Şablonu</span>
           </button>
 
+          {/* 4. Bildirimler */}
           <button
             type="button"
             onClick={() => setActiveSubTab('notifications')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-sm text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+            className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
               activeSubTab === 'notifications'
-                ? 'bg-blue-600 text-white font-bold shadow-2xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/25 scale-[1.02]'
+                : 'bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-slate-700/80 hover:border-amber-300 hover:translate-x-1'
             }`}
           >
-            <Bell className="w-4 h-4 shrink-0" />
-            <span>Bildirimler & Ses Tercihleri</span>
+            <div className={`p-1.5 rounded-lg shrink-0 ${activeSubTab === 'notifications' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400'}`}>
+              <Bell className="w-4 h-4" />
+            </div>
+            <span>Bildirimler & Sesler</span>
           </button>
 
+          {/* 5. Kullanıcı Yönetimi */}
           <button
             type="button"
             onClick={() => setActiveSubTab('users')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-sm text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+            className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
               activeSubTab === 'users'
-                ? 'bg-blue-600 text-white font-bold shadow-2xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md shadow-purple-500/25 scale-[1.02]'
+                : 'bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-slate-700/80 hover:border-purple-300 hover:translate-x-1'
             }`}
           >
-            <Users className="w-4 h-4 shrink-0" />
+            <div className={`p-1.5 rounded-lg shrink-0 ${activeSubTab === 'users' ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400'}`}>
+              <Users className="w-4 h-4" />
+            </div>
             <span>Kullanıcı Yönetimi</span>
           </button>
 
+          {/* 6. Görünüm & Tema */}
           <button
             type="button"
             onClick={() => setActiveSubTab('appearance')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-sm text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+            className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
               activeSubTab === 'appearance'
-                ? 'bg-blue-600 text-white font-bold shadow-2xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-md shadow-rose-500/25 scale-[1.02]'
+                : 'bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-rose-50 dark:hover:bg-slate-700/80 hover:border-rose-300 hover:translate-x-1'
             }`}
           >
-            <Palette className="w-4 h-4 shrink-0" />
+            <div className={`p-1.5 rounded-lg shrink-0 ${activeSubTab === 'appearance' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-600 dark:bg-rose-900/50 dark:text-rose-400'}`}>
+              <Palette className="w-4 h-4" />
+            </div>
             <span>Görünüm & Tema</span>
           </button>
 
+          {/* 7. Veri Tabanı & Sistem */}
           <button
             type="button"
             onClick={() => setActiveSubTab('data')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-sm text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+            className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 transition-all duration-200 cursor-pointer ${
               activeSubTab === 'data'
-                ? 'bg-blue-600 text-white font-bold shadow-2xs'
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-md shadow-slate-900/25 scale-[1.02]'
+                : 'bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/80 hover:border-slate-400 hover:translate-x-1'
             }`}
           >
-            <Database className="w-4 h-4 shrink-0" />
+            <div className={`p-1.5 rounded-lg shrink-0 ${activeSubTab === 'data' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'}`}>
+              <Database className="w-4 h-4" />
+            </div>
             <span>Veri Tabanı & Sistem</span>
           </button>
+
         </div>
 
-        {/* Sub-Tab Content Forms */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 p-6 rounded-sm border border-slate-200 dark:border-slate-800 shadow-xs">
+        {/* Form Content Display Card */}
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm">
           
           <form onSubmit={handleSubmit} className="space-y-6">
             
             {/* 1. COMPANY & BANK DETAILS */}
             {activeSubTab === 'company' && (
-              <div className="space-y-6 animate-in fade-in duration-150">
-                <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-blue-600" />
-                    <span>Firma Profil & İletişim Bilgileri</span>
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Bu bilgiler çıktı alınan teklif evraklarında ve müşteriye giden e-posta antetlerinde resmi olarak görünecektir.
-                  </p>
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold shrink-0">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                      Firma Profil & İletişim Bilgileri
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Bu bilgiler teklif çıktılarında, müşteri ekranında ve resmi yazışmalarda görüntülenecektir.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  
                   {/* Logo Upload Box */}
-                  <div className="sm:col-span-2 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-sm border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-4">
-                    <div className="w-20 h-20 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
+                  <div className="sm:col-span-2 bg-slate-50/80 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center gap-4">
+                    <div className="w-20 h-20 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
                       {formData.company.logoUrl ? (
                         <img src={formData.company.logoUrl} alt="Firma Logosu" className="w-full h-full object-contain p-1" />
                       ) : (
-                        <Building2 className="w-8 h-8 text-slate-400" />
+                        <Building2 className="w-8 h-8 text-blue-500/60" />
                       )}
                     </div>
                     <div className="space-y-1.5 text-left w-full">
-                      <label className="block font-bold text-slate-700 dark:text-slate-300">
-                        Firma Logosu
+                      <label className="block font-bold text-slate-800 dark:text-slate-200">
+                        Kurumsal Firma Logosu
                       </label>
-                      <p className="text-[10px] text-slate-500">
-                        PNG, JPG veya SVG formatında. Şeffaf arka planlı olması önerilir.
+                      <p className="text-[11px] text-slate-500">
+                        PNG, JPG veya SVG formatında varsayılan teklif başlığında gösterilecek logo.
                       </p>
                       <div className="flex items-center gap-2 pt-1">
-                        <label className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-650 rounded-sm font-semibold cursor-pointer flex items-center gap-1.5 transition-colors">
+                        <label className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs cursor-pointer flex items-center gap-1.5 shadow-xs transition-colors">
                           <Upload className="w-3.5 h-3.5" />
-                          <span>Logo Seç</span>
+                          <span>Logo Yükle / Seç</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -329,7 +363,7 @@ export const Settings: React.FC<SettingsProps> = ({
                           <button
                             type="button"
                             onClick={() => handleCompanyChange('logoUrl', '')}
-                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-sm font-semibold transition-colors"
+                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg font-semibold text-xs transition-colors cursor-pointer"
                           >
                             Logoyu Kaldır
                           </button>
@@ -339,53 +373,54 @@ export const Settings: React.FC<SettingsProps> = ({
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block font-bold text-slate-600 dark:text-slate-300 mb-1">
-                      Şirket Unvanı (Resmi) *
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Resmi Şirket Unvanı *
                     </label>
                     <input
                       type="text"
                       required
                       value={formData.company.name}
                       onChange={(e) => handleCompanyChange('name', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-bold text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none"
                     />
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      Hizmet / Slogan Alt Başlığı
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Hizmet & Slogan Alt Başlığı
                     </label>
                     <input
                       type="text"
                       value={formData.company.title}
                       onChange={(e) => handleCompanyChange('title', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none"
                     />
                   </div>
 
-                  <div className="sm:col-span-2 bg-blue-50/70 dark:bg-blue-950/30 p-3.5 rounded-sm border border-blue-200 dark:border-blue-900 space-y-1.5">
-                    <label className="block font-bold text-blue-900 dark:text-blue-300 text-xs flex items-center gap-1.5">
+                  {/* Public URL Box */}
+                  <div className="sm:col-span-2 bg-gradient-to-r from-blue-50/90 to-indigo-50/70 dark:bg-blue-950/40 p-4 rounded-xl border border-blue-200 dark:border-blue-900 space-y-2">
+                    <label className="block font-bold text-blue-950 dark:text-blue-300 text-xs flex items-center gap-1.5">
                       <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <span>İnternet Erişim Adresi (Public Web URL)</span>
                     </label>
                     <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                      Müşterilere gönderilen e-postalardaki ve linklerdeki teklif bağlantılarının internet üzerinden (dış ağlardan) erişilebilir olması için web adresi girin (Örn: <code className="bg-white dark:bg-slate-800 px-1 py-0.5 rounded font-mono font-bold text-blue-600">https://teklif-pro.onrender.com</code> veya localtunnel / ngrok adresi).
+                      Müşterilere gönderilen e-postalardaki ve linklerdeki teklif bağlantılarının dış ağlardan erişilebilir olması için açık web adresi girin (Örn: <code className="bg-white dark:bg-slate-800 px-1 py-0.5 rounded font-mono font-bold text-blue-600">https://teklif-pro.onrender.com</code> veya localtunnel adresi).
                     </p>
                     <input
                       type="text"
                       placeholder="https://funny-pigs-run.loca.lt"
                       value={formData.company.publicUrl || ''}
                       onChange={(e) => handleCompanyChange('publicUrl', e.target.value)}
-                      className="w-full p-2.5 bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-sm font-mono text-xs text-slate-900 dark:text-slate-100 font-bold"
+                      className="w-full p-2.5 bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-lg font-mono text-xs text-slate-900 dark:text-slate-100 font-bold focus:ring-2 focus:ring-blue-500/30 outline-none"
                     />
                     {formData.company.publicUrl && (
-                      <div className="mt-1 text-[11px] text-blue-600 dark:text-blue-400 font-mono font-semibold flex items-center gap-1.5 flex-wrap">
-                        <span>Canlı Önizleme Bağlantı Formatı:</span>
+                      <div className="mt-1 text-[11px] text-blue-700 dark:text-blue-300 font-mono font-semibold flex items-center gap-1.5 flex-wrap">
+                        <span>Canlı Bağlantı Formatı:</span>
                         <a
                           href={getPublicPortalUrl(proposals[0]?.id || 'ORNEK-TEKLIF-ID', { company: formData.company })}
                           target="_blank"
                           rel="noreferrer"
-                          className="underline hover:text-blue-800 dark:hover:text-blue-300 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-blue-200"
+                          className="underline hover:text-blue-900 dark:hover:text-blue-200 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-blue-200 shadow-2xs"
                         >
                           {getPublicPortalUrl(proposals[0]?.id || 'ORNEK-TEKLIF-ID', { company: formData.company })}
                         </a>
@@ -394,74 +429,74 @@ export const Settings: React.FC<SettingsProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Vergi Dairesi
                     </label>
                     <input
                       type="text"
                       value={formData.company.taxOffice}
                       onChange={(e) => handleCompanyChange('taxOffice', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      Vergi Kimlik Numarası (VKN / TCKN)
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Vergi Numarası (VKN / TCKN)
                     </label>
                     <input
                       type="text"
                       value={formData.company.taxNumber}
                       onChange={(e) => handleCompanyChange('taxNumber', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-mono text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      Şirket Telefonu
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Telefon
                     </label>
                     <input
                       type="text"
                       value={formData.company.phone}
                       onChange={(e) => handleCompanyChange('phone', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-mono text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      Resmi E-Posta Adresi
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Resmi E-Posta
                     </label>
                     <input
                       type="email"
                       value={formData.company.email}
                       onChange={(e) => handleCompanyChange('email', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-mono text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none"
                     />
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      Web Sitesi Adresi
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Web Sitesi
                     </label>
                     <input
                       type="url"
                       value={formData.company.website}
                       onChange={(e) => handleCompanyChange('website', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-mono text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none"
                     />
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      Açık Adres Bilgisi
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Adres
                     </label>
                     <textarea
                       rows={2}
                       value={formData.company.address}
                       onChange={(e) => handleCompanyChange('address', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none"
                     />
                   </div>
                 </div>
@@ -470,11 +505,11 @@ export const Settings: React.FC<SettingsProps> = ({
                 <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
                   <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-emerald-600" />
-                    <span>Banka & Ödeme IBAN Bilgileri</span>
+                    <span>Banka & Ödeme IBAN Hesap Bilgileri</span>
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-800/50 p-4 rounded-sm border border-slate-200 dark:border-slate-700">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-emerald-50/50 dark:bg-slate-800/60 p-4 rounded-xl border border-emerald-200 dark:border-slate-700">
                     <div>
-                      <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                         Banka Adı
                       </label>
                       <input
@@ -482,11 +517,11 @@ export const Settings: React.FC<SettingsProps> = ({
                         placeholder="Örn: Garanti BBVA"
                         value={formData.company.bankName || ''}
                         onChange={(e) => handleCompanyChange('bankName', e.target.value)}
-                        className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-900 dark:text-slate-100 font-semibold"
+                        className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                         Hesap Sahibi Unvanı
                       </label>
                       <input
@@ -494,11 +529,11 @@ export const Settings: React.FC<SettingsProps> = ({
                         placeholder="TEKLİFPRO DİJİTAL A.Ş."
                         value={formData.company.bankAccountHolder || ''}
                         onChange={(e) => handleCompanyChange('bankAccountHolder', e.target.value)}
-                        className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-900 dark:text-slate-100"
+                        className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 outline-none"
                       />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                         IBAN Numarası
                       </label>
                       <input
@@ -506,7 +541,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         placeholder="TR00 0000 0000 0000 0000 0000 00"
                         value={formData.company.bankIban || ''}
                         onChange={(e) => handleCompanyChange('bankIban', e.target.value)}
-                        className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm font-mono font-bold text-emerald-600 dark:text-emerald-400"
+                        className="w-full p-2.5 bg-white dark:bg-slate-900 border border-emerald-300 dark:border-slate-700 rounded-lg font-mono font-black text-emerald-600 dark:text-emerald-400 focus:ring-2 focus:ring-emerald-500/30 outline-none"
                       />
                     </div>
                   </div>
@@ -517,20 +552,24 @@ export const Settings: React.FC<SettingsProps> = ({
 
             {/* 2. PROPOSAL DEFAULTS */}
             {activeSubTab === 'proposalDefaults' && (
-              <div className="space-y-4 animate-in fade-in duration-150">
-                <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-blue-600" />
-                    <span>Teklif & Cihaz Parametreleri</span>
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Yeni teklif oluşturulurken varsayılan olarak seçilecek süre, para birimi, KDV ve cihaz notları.
-                  </p>
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                      Teklif & Cihaz Parametreleri
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Yeni teklif oluşturulurken varsayılan geçerlilik süresi, para birimi, KDV oranı ve varsayılan notlar.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Teklif Numarası Öneki (Prefix)
                     </label>
                     <input
@@ -538,19 +577,19 @@ export const Settings: React.FC<SettingsProps> = ({
                       value={formData.proposalDefaults.prefix}
                       onChange={(e) => handleProposalDefaultsChange('prefix', e.target.value)}
                       placeholder="Örn: TEK"
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-mono font-bold text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-mono font-bold text-slate-900 dark:text-slate-100"
                     />
                     <p className="text-[10px] text-slate-400 mt-1">Örnek Numaralandırma: TEK-2026-001</p>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Varsayılan Geçerlilik Süresi (Gün)
                     </label>
                     <select
                       value={formData.proposalDefaults.validDays}
                       onChange={(e) => handleProposalDefaultsChange('validDays', Number(e.target.value))}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-semibold text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-semibold text-slate-900 dark:text-slate-100"
                     >
                       <option value={7}>7 Gün</option>
                       <option value={14}>14 Gün (Tavsiye Edilen)</option>
@@ -560,13 +599,13 @@ export const Settings: React.FC<SettingsProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Varsayılan Para Birimi
                     </label>
                     <select
                       value={formData.proposalDefaults.currency}
                       onChange={(e) => handleProposalDefaultsChange('currency', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-semibold text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-semibold text-slate-900 dark:text-slate-100"
                     >
                       <option value="TRY">₺ - Türk Lirası (TRY)</option>
                       <option value="USD">$ - Amerikan Doları (USD)</option>
@@ -576,13 +615,13 @@ export const Settings: React.FC<SettingsProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Varsayılan KDV Oranı (%)
                     </label>
                     <select
                       value={formData.proposalDefaults.taxRate}
                       onChange={(e) => handleProposalDefaultsChange('taxRate', Number(e.target.value))}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-mono text-slate-900 dark:text-slate-100"
                     >
                       <option value={20}>%20 KDV (Standart)</option>
                       <option value={10}>%10 KDV</option>
@@ -592,121 +631,113 @@ export const Settings: React.FC<SettingsProps> = ({
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      Cihaz Varsayılan Teklif Notu (Garanti & Teslim Süresi)
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Cihaz Varsayılan Teklif Notu (Garanti & Teslimat Bilgisi)
                     </label>
                     <textarea
                       rows={2}
                       value={formData.proposalDefaults.deviceDefaultNote || ''}
                       onChange={(e) => handleProposalDefaultsChange('deviceDefaultNote', e.target.value)}
-                      placeholder="Örn: Cihaz yedek parçaları 1 yıl garantilidir. Teslim süresi 3 iş günüdür."
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
                     />
-                    <p className="text-[10px] text-slate-400 mt-0.5">Teklife eklenen her yeni cihazda bu varsayılan not otomatik gösterilir.</p>
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      Varsayılan Ödeme Koşulları Metni
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Varsayılan Ödeme Koşulları Şablonu
                     </label>
                     <textarea
                       rows={2}
                       value={formData.proposalDefaults.paymentTerms}
                       onChange={(e) => handleProposalDefaultsChange('paymentTerms', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200 font-mono"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                      Varsayılan Teklif Ön Sunuş Mektubu Şablonu
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={formData.proposalDefaults.notes}
-                      onChange={(e) => handleProposalDefaultsChange('notes', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
                     />
                   </div>
                 </div>
               </div>
             )}
 
-            {/* 3. PRINT OPTIONS (NEW) */}
+            {/* 3. PRINT & DOCUMENT OPTIONS */}
             {activeSubTab === 'printOptions' && (
-              <div className="space-y-4 animate-in fade-in duration-150">
-                <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                    <Printer className="w-4 h-4 text-blue-600" />
-                    <span>Baskı & Evrak Görünümü Tercihleri</span>
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Yazdırılan teklif belgelerindeki görsel vurgular ve gösterilecek resmi bölümler.
-                  </p>
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                    <Printer className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                      Baskı & Evrak Şablon Ayarları
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      İndirilen ve yazdırılan PDF evraklarındaki alan görünürlükleri.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="space-y-4 text-xs">
-                  
-                  <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                <div className="space-y-3 text-xs">
+                  <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                     <div>
-                      <div className="font-bold text-slate-900 dark:text-slate-100">Teklif Çıktısında Kurumsal Logo</div>
-                      <div className="text-[11px] text-slate-500">Logoyu antet kısmında gösterir.</div>
+                      <div className="font-bold text-slate-900 dark:text-slate-100">Firma Logosu Gösterilsin</div>
+                      <div className="text-[11px] text-slate-500">PDF başında firma logosunu konumlandır.</div>
                     </div>
                     <input
                       type="checkbox"
                       checked={formData.printOptions?.showLogo ?? true}
                       onChange={(e) => handlePrintOptionsChange('showLogo', e.target.checked)}
-                      className="w-4 h-4 text-blue-600 rounded-sm cursor-pointer"
+                      className="w-5 h-5 text-emerald-600 rounded-md cursor-pointer"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                     <div>
-                      <div className="font-bold text-slate-900 dark:text-slate-100">Banka & IBAN Bilgileri Çıktısı</div>
-                      <div className="text-[11px] text-slate-500">Teklif belgesinin alt kısmına banka hesap detaylarını ekler.</div>
+                      <div className="font-bold text-slate-900 dark:text-slate-100">Banka & IBAN Bilgileri Gösterilsin</div>
+                      <div className="text-[11px] text-slate-500">Ödeme bilgisi kutucuğunu teklif alt kısmına ekle.</div>
                     </div>
                     <input
                       type="checkbox"
                       checked={formData.printOptions?.showBankDetails ?? true}
                       onChange={(e) => handlePrintOptionsChange('showBankDetails', e.target.checked)}
-                      className="w-4 h-4 text-blue-600 rounded-sm cursor-pointer"
+                      className="w-5 h-5 text-emerald-600 rounded-md cursor-pointer"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                     <div>
-                      <div className="font-bold text-slate-900 dark:text-slate-100">İmza & Onay Alanı Çıktısı</div>
-                      <div className="text-[11px] text-slate-500">Teklifi sunan ve müşteri onay imza alanlarını görüntüler.</div>
+                      <div className="font-bold text-slate-900 dark:text-slate-100">İmza & Kaşe Alanı Gösterilsin</div>
+                      <div className="text-[11px] text-slate-500">Firma yetkilisi ve müşteri onay imza çizgisi ekle.</div>
                     </div>
                     <input
                       type="checkbox"
                       checked={formData.printOptions?.showSignatures ?? true}
                       onChange={(e) => handlePrintOptionsChange('showSignatures', e.target.checked)}
-                      className="w-4 h-4 text-blue-600 rounded-sm cursor-pointer"
+                      className="w-5 h-5 text-emerald-600 rounded-md cursor-pointer"
                     />
                   </div>
-
                 </div>
               </div>
             )}
 
-            {/* 4. NOTIFICATIONS & EMAIL */}
+            {/* 4. NOTIFICATIONS */}
             {activeSubTab === 'notifications' && (
-              <div className="space-y-4 animate-in fade-in duration-150">
-                <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                    <Bell className="w-4 h-4 text-blue-600" />
-                    <span>Canlı Bildirimler & Ses Tercihleri</span>
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Müşteri teklifi açtığında veya onayladığında anında tetiklenen ses ve görsel uyarılar.
-                  </p>
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold shrink-0">
+                    <Bell className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                      Canlı Bildirimler & Ses Tercihleri
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Müşteri teklifi açtığında veya onayladığında anında tetiklenen sesli ve görsel uyarılar.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="space-y-4 text-xs">
                   
                   {/* Sound Alerts */}
-                  <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3">
                       {formData.notifications.soundEnabled ? (
                         <Volume2 className="w-5 h-5 text-emerald-600" />
@@ -715,7 +746,7 @@ export const Settings: React.FC<SettingsProps> = ({
                       )}
                       <div>
                         <div className="font-bold text-slate-900 dark:text-slate-100">Sesli Bildirim Uyarıları</div>
-                        <div className="text-[11px] text-slate-500">Müşteri onay verdiğinde zil sesi çalınır.</div>
+                        <div className="text-[11px] text-slate-500">Müşteri teklifi onayladığında bildirim sesi çalınır.</div>
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -725,17 +756,17 @@ export const Settings: React.FC<SettingsProps> = ({
                         onChange={(e) => handleNotificationsChange('soundEnabled', e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
                     </label>
                   </div>
 
                   {/* Toast Popups */}
-                  <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3">
-                      <Sparkles className="w-5 h-5 text-blue-600" />
+                      <Sparkles className="w-5 h-5 text-amber-500" />
                       <div>
                         <div className="font-bold text-slate-900 dark:text-slate-100">Ekran İçi Canlı Popup Bildirimler</div>
-                        <div className="text-[11px] text-slate-500">Sağ alt köşede canlı bildirim kartı gösterilir.</div>
+                        <div className="text-[11px] text-slate-500">Ekranın sağ alt köşesinde anlık canlı uyarı kartı gösterilir.</div>
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -745,33 +776,33 @@ export const Settings: React.FC<SettingsProps> = ({
                         onChange={(e) => handleNotificationsChange('toastEnabled', e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
                     </label>
                   </div>
 
                   {/* Email Sender Name */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <div>
-                      <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                         E-Posta Gönderen Görünür Unvanı
                       </label>
                       <input
                         type="text"
                         value={formData.notifications.senderName}
                         onChange={(e) => handleNotificationsChange('senderName', e.target.value)}
-                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-semibold text-slate-900 dark:text-slate-100"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-semibold text-slate-900 dark:text-slate-100"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                         Varsayılan E-Posta Konu Şablonu
                       </label>
                       <input
                         type="text"
                         value={formData.notifications.emailSubjectTemplate}
                         onChange={(e) => handleNotificationsChange('emailSubjectTemplate', e.target.value)}
-                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-mono text-slate-900 dark:text-slate-100"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-mono text-slate-900 dark:text-slate-100"
                       />
                     </div>
                   </div>
@@ -779,10 +810,10 @@ export const Settings: React.FC<SettingsProps> = ({
                 </div>
               </div>
             )}
- 
-             {/* USER MANAGEMENT TAB */}
+
+            {/* 5. USER MANAGEMENT TAB */}
             {activeSubTab === 'users' && (
-              <div className="animate-in fade-in duration-150">
+              <div className="animate-in fade-in duration-200">
                 <UserManagement
                   users={users}
                   onAddUser={onAddUser}
@@ -793,28 +824,32 @@ export const Settings: React.FC<SettingsProps> = ({
               </div>
             )}
 
-            {/* 5. APPEARANCE */}
+            {/* 6. APPEARANCE */}
             {activeSubTab === 'appearance' && (
-              <div className="space-y-4 animate-in fade-in duration-150">
-                <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                    <Palette className="w-4 h-4 text-blue-600" />
-                    <span>Görünüm & Tema Ayarları</span>
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Uygulama arayüzünün renk modu ve tablo yoğunluk seçenekleri.
-                  </p>
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold shrink-0">
+                    <Palette className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                      Görünüm & Tema Ayarları
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Uygulama arayüzünün renk modu ve liste yoğunluk seçenekleri.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Arayüz Teması Modu
                     </label>
                     <select
                       value={formData.appearance.theme}
                       onChange={(e) => handleAppearanceChange('theme', e.target.value)}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm font-semibold text-slate-900 dark:text-slate-100"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg font-semibold text-slate-900 dark:text-slate-100"
                     >
                       <option value="light">Aydınlık Mod (Light)</option>
                       <option value="dark">Karanlık Mod (Dark)</option>
@@ -822,151 +857,121 @@ export const Settings: React.FC<SettingsProps> = ({
                     </select>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 self-end">
+                  <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 self-end">
                     <div>
                       <div className="font-bold text-slate-900 dark:text-slate-100">Kompakt Tablo Görünümü</div>
-                      <div className="text-[11px] text-slate-500">Listelerde daha fazla teklif göster.</div>
+                      <div className="text-[11px] text-slate-500">Listelerde daha sıkıştırılmış teklif satırları.</div>
                     </div>
                     <input
                       type="checkbox"
                       checked={formData.appearance.compactView}
                       onChange={(e) => handleAppearanceChange('compactView', e.target.checked)}
-                      className="w-4 h-4 text-blue-600 rounded-sm"
+                      className="w-5 h-5 text-rose-600 rounded-md cursor-pointer"
                     />
                   </div>
                 </div>
               </div>
             )}
 
-            {/* 6. DATA MANAGEMENT */}
+            {/* 7. DATA MANAGEMENT */}
             {activeSubTab === 'data' && (
-              <div className="space-y-4 animate-in fade-in duration-150">
-                <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
-                    <Database className="w-4 h-4 text-blue-600" />
-                    <span>Veri Tabanı & Sistem Sıfırlama</span>
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Teklif ve müşteri verilerinizi bilgisayarınıza dışa aktarın veya veritabanını fabrika ayarlarına döndürün.
-                  </p>
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center font-bold shrink-0">
+                    <Database className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                      Veri Tabanı & Sistem Yedekleme
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Teklif ve müşteri verilerinizi JSON formatında dışa aktarın veya veritabanını fabrika ayarlarına döndürün.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="space-y-4 text-xs">
                   
                   {/* Database Info Box */}
-                  <div className="p-4 bg-blue-50 dark:bg-blue-950/40 rounded-sm border border-blue-200 dark:border-blue-800 flex items-center gap-3">
-                    <Database className="w-6 h-6 text-blue-600 shrink-0" />
+                  <div className="p-4 bg-cyan-50/70 dark:bg-cyan-950/40 rounded-xl border border-cyan-200 dark:border-cyan-800 flex items-center gap-3 shadow-2xs">
+                    <Database className="w-6 h-6 text-cyan-600 shrink-0" />
                     <div>
-                      <div className="font-bold text-blue-900 dark:text-blue-200 text-xs">SQLite Veri Tabanı Aktif</div>
-                      <div className="text-[11px] text-blue-700 dark:text-blue-300 font-mono mt-0.5">
-                        Veri dosyası: <strong>database.sqlite</strong> (Tüm teklifler, müşteriler ve ayarlar güvenli şekilde tutulmaktadır)
+                      <div className="font-bold text-cyan-950 dark:text-cyan-200 text-xs">SQLite Yerel Veri Tabanı Aktif</div>
+                      <div className="text-[11px] text-cyan-700 dark:text-cyan-300 font-mono mt-0.5">
+                        Tüm verileriniz SQLite <code className="bg-white dark:bg-slate-800 px-1 py-0.5 rounded font-bold">teklif_pro.db</code> veritabanı dosyasında güvendedir.
                       </div>
                     </div>
                   </div>
 
-                  {/* Export Box */}
-                  <div className="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div>
-                      <div className="font-bold text-slate-900 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                  {/* Actions Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    
+                    <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+                      <div className="font-bold text-slate-900 dark:text-slate-100 text-xs flex items-center gap-2">
                         <Download className="w-4 h-4 text-blue-600" />
-                        <span>Sistem Verilerini Dışa Aktar (JSON Yedek)</span>
+                        <span>Sistem Verilerini Dışa Aktar (Backup)</span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Kayıtlı toplam <strong>{proposals.length} adet teklif</strong> ve <strong>{customers.length} müşteri</strong> verisi JSON olarak indirilir.
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Tüm müşterilerinizi, tekliflerinizi ve sistem ayarlarınızı bilgisayarınıza <code className="font-mono bg-white dark:bg-slate-800 px-1 py-0.5 rounded border border-slate-200">.json</code> formatında yedekleyin.
                       </p>
+                      <button
+                        type="button"
+                        onClick={handleExportData}
+                        className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Yedek Dosyası İndir (.json)</span>
+                      </button>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={handleExportData}
-                      className="px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold rounded-sm text-xs flex items-center gap-1.5 shadow-xs shrink-0"
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>Yedek Dosyasını İndir</span>
-                    </button>
-                  </div>
-
-                  {/* Reset Box */}
-                  <div className="p-4 bg-rose-50 dark:bg-rose-950/30 rounded-sm border border-rose-200 dark:border-rose-900/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div>
-                      <div className="font-bold text-rose-800 dark:text-rose-300 text-sm flex items-center gap-1.5">
+                    <div className="p-4 bg-rose-50/60 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900/60 space-y-3">
+                      <div className="font-bold text-rose-950 dark:text-rose-300 text-xs flex items-center gap-2">
                         <RotateCcw className="w-4 h-4 text-rose-600" />
-                        <span>Fabrika Ayarlarına Dön & Örnek Veri Yükle</span>
+                        <span>Fabrika Ayarlarına Dönüş</span>
                       </div>
-                      <p className="text-xs text-rose-700 dark:text-rose-400 mt-1">
-                        Sistemdeki tüm özel değişiklikler silinerek başlangıçtaki demo teklifler ve müşteriler geri yüklenir.
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                        Veritabanındaki demo verileri sıfırlar ve uygulamayı varsayılan ilk kurulum durumuna getirir.
                       </p>
+                      {!showResetConfirm ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowResetConfirm(true)}
+                          className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                          <span>Veritabanını Sıfırla</span>
+                        </button>
+                      ) : (
+                        <div className="p-3 bg-white dark:bg-slate-900 border border-rose-300 rounded-lg space-y-2">
+                          <p className="text-[11px] font-bold text-rose-700 dark:text-rose-400">Emin misiniz? Tüm veriler silinecektir.</p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await onResetData();
+                                setShowResetConfirm(false);
+                              }}
+                              className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-md shadow-xs cursor-pointer"
+                            >
+                              Evet, Sıfırla
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setShowResetConfirm(false)}
+                              className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-md cursor-pointer"
+                            >
+                              İptal
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setShowResetConfirm(true)}
-                      className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-sm text-xs flex items-center gap-1.5 shadow-xs border border-rose-500 shrink-0"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                      <span>Sistemi Sıfırla</span>
-                    </button>
                   </div>
 
                 </div>
               </div>
             )}
-
-            {/* Reset Modal */}
-            {showResetConfirm && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-                <div className="bg-white dark:bg-slate-900 rounded-sm border border-slate-300 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-4">
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-sm bg-rose-100 dark:bg-rose-950 flex items-center justify-center text-rose-600 shrink-0 border border-rose-200 dark:border-rose-800">
-                      <RotateCcw className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Sistemi Sıfırlama Onayı</h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                        Tüm sistem verilerini başlangıçtaki örnek teklifler, müşteriler ve ayarlara döndürmek istediğinizden emin misiniz?
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                    <button
-                      type="button"
-                      onClick={() => setShowResetConfirm(false)}
-                      className="px-4 py-2 rounded-sm border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold"
-                    >
-                      Vazgeç
-                    </button>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await onResetData();
-                        setShowResetConfirm(false);
-                      }}
-                      className="px-4 py-2 rounded-sm bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs"
-                    >
-                      Evet, Sıfırla
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Bottom Submit Bar */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <div className="text-[11px] text-slate-400 flex items-center gap-1 font-mono">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>TeklifPro Konfigürasyon Modülü v3.0</span>
-              </div>
-
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-6 py-2.5 rounded-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors flex items-center gap-2 shadow-xs border border-blue-500"
-              >
-                <Save className="w-4 h-4" />
-                <span>{saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}</span>
-              </button>
-            </div>
 
           </form>
 
