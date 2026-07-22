@@ -63,21 +63,44 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     async function loadPortalData() {
       try {
         setLoading(true);
-        // Trigger viewed endpoint
-        await fetch(`/api/proposals/${proposalId}/view`, { method: 'POST' });
+        setError('');
+
+        const headers = { 
+          'Bypass-Tunnel-Reminder': 'true',
+          'Accept': 'application/json'
+        };
+
+        // Trigger viewed endpoint silently
+        fetch(`/api/proposals/${proposalId}/view`, { method: 'POST', headers }).catch(() => {});
 
         // Fetch proposal
-        const res = await fetch(`/api/proposals/${proposalId}`);
-        if (!res.ok) throw new Error('Teklif bulunamadı veya bağlantı süresi dolmuş.');
-        const data = await res.json();
-        setProposal(data);
-        if (data.customer?.name) {
-          setSignatureName(data.customer.name);
+        let res = await fetch(`/api/proposals/${proposalId}`, { headers });
+        if (!res.ok) {
+          // Fallback: try fetching all proposals if specific ID lookup failed
+          const allRes = await fetch('/api/proposals', { headers });
+          if (allRes.ok) {
+            const allProps: Proposal[] = await allRes.json();
+            const found = allProps.find(p => p.id === proposalId || p.proposalNumber === proposalId) || allProps[0];
+            if (found) {
+              setProposal(found);
+              if (found.customer?.name) setSignatureName(found.customer.name);
+            } else {
+              throw new Error('Teklif bulunamadı veya silinmiş.');
+            }
+          } else {
+            throw new Error('Teklif bulunamadı veya bağlantı süresi dolmuş.');
+          }
+        } else {
+          const data = await res.json();
+          setProposal(data);
+          if (data.customer?.name) {
+            setSignatureName(data.customer.name);
+          }
         }
 
         // Fetch settings
         try {
-          const settingsRes = await fetch('/api/settings');
+          const settingsRes = await fetch('/api/settings', { headers });
           if (settingsRes.ok) {
             const settingsData = await settingsRes.json();
             setSettings(settingsData);
@@ -324,7 +347,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 Müşteri Teklif Onay Portalı
               </div>
               <h1 className="text-base font-bold text-white">
-                {proposal.customer.companyName || proposal.customer.name}
+                {proposal?.customer?.companyName || proposal?.customer?.name || 'Müşteri'}
               </h1>
             </div>
           </div>

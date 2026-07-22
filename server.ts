@@ -425,6 +425,59 @@ async function startServer() {
     }
   });
 
+  // POST /api/proposals/:id/view - Mark proposal as viewed by customer
+  app.post("/api/proposals/:id/view", async (req, res) => {
+    try {
+      const proposal = await getProposalById(req.params.id);
+      if (!proposal) {
+        return res.status(404).json({ error: "Teklif bulunamadı" });
+      }
+
+      let newStatus = proposal.status;
+      if (proposal.status === 'GONDERILDI' || proposal.status === 'TASLAK') {
+        newStatus = 'INCELENIYOR';
+      }
+
+      const updatedHistory = [
+        ...(proposal.history || []),
+        {
+          id: `log-${Date.now()}`,
+          date: new Date().toLocaleString('tr-TR'),
+          action: 'Görüntülendi',
+          description: 'Teklif müşteri tarafından görüntülendi.',
+          actor: proposal.customer?.name || 'Müşteri'
+        }
+      ];
+
+      const updatedProposal: Proposal = {
+        ...proposal,
+        status: newStatus,
+        viewedAt: proposal.viewedAt || new Date().toISOString(),
+        history: updatedHistory
+      };
+
+      await updateProposal(proposal.id, updatedProposal);
+
+      await insertNotification({
+        id: `notif-${Date.now()}`,
+        proposalId: proposal.id,
+        proposalNumber: proposal.proposalNumber,
+        customerName: proposal.customer?.companyName || proposal.customer?.name || 'Müşteri',
+        type: 'GORUNTULEME',
+        title: 'Teklif Görüntülendi',
+        message: `${proposal.customer?.companyName || proposal.customer?.name} teklifi görüntüledi.`,
+        createdAt: new Date().toISOString(),
+        isRead: false,
+        amount: proposal.grandTotal,
+        currency: proposal.currency
+      });
+
+      res.json({ success: true, proposal: updatedProposal });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // POST /api/proposals - Create new proposal
   app.post("/api/proposals", async (req, res) => {
     try {
