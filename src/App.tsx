@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Proposal, Customer, AppNotification, AppSettings, User } from './types';
+import { Proposal, Customer, AppNotification, AppSettings, User, Invoice } from './types';
 import { Login } from './components/Login';
 import { Navbar } from './components/Navbar';
 import { DashboardStats } from './components/DashboardStats';
@@ -13,6 +13,7 @@ import { CustomerSimulatorModal } from './components/CustomerSimulatorModal';
 import { CustomerList } from './components/CustomerList';
 import { Settings } from './components/Settings';
 import { DetailedReports } from './components/DetailedReports';
+import { InvoiceList } from './components/InvoiceList';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { playNotificationSound, formatCurrency } from './utils/formatters';
 import { Bell, Sparkles, CheckCircle2, XCircle, Eye, Users, Plus, Mail, Building2, Phone, MapPin } from 'lucide-react';
@@ -83,9 +84,10 @@ function AppContent() {
   const { user, isAuthenticated, isLoading, login, logout, updateUser, setSession } = useAuth();
 
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'proposals' | 'customers' | 'reports' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'proposals' | 'invoices' | 'customers' | 'reports' | 'settings'>('dashboard');
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
@@ -247,6 +249,46 @@ function AppContent() {
     }
   };
 
+  const loadInvoices = async () => {
+    try {
+      const res = await fetch('/api/invoices');
+      if (res.ok) {
+        const data = await res.json();
+        setInvoices(data);
+      }
+    } catch (err) {
+      console.error('Invoices fetch error:', err);
+    }
+  };
+
+  const handleSaveInvoice = async (invoiceData: Partial<Invoice>) => {
+    try {
+      const url = invoiceData.id ? `/api/invoices/${invoiceData.id}` : '/api/invoices';
+      const method = invoiceData.id ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(invoiceData)
+      });
+      if (res.ok) {
+        await loadInvoices();
+      }
+    } catch (err) {
+      console.error('Save invoice error:', err);
+    }
+  };
+
+  const handleDeleteInvoice = async (id: string) => {
+    try {
+      const res = await fetch(`/api/invoices/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        await loadInvoices();
+      }
+    } catch (err) {
+      console.error('Delete invoice error:', err);
+    }
+  };
+
   const loadNotifications = async () => {
     try {
       const res = await fetch('/api/notifications');
@@ -278,6 +320,7 @@ function AppContent() {
   useEffect(() => {
     loadProposals();
     loadCustomers();
+    loadInvoices();
     loadNotifications();
     loadSettings();
   }, []);
@@ -635,6 +678,19 @@ function AppContent() {
               setIsSimulatorOpen(true);
             }}
             currentUser={user}
+          />
+        ) : activeTab === 'invoices' ? (
+          /* Invoices Tab */
+          <InvoiceList
+            invoices={invoices}
+            customers={customers}
+            proposals={proposals}
+            onSaveInvoice={handleSaveInvoice}
+            onDeleteInvoice={handleDeleteInvoice}
+            onSelectProposal={(id) => {
+              setSelectedProposalId(id);
+              setActiveTab('proposals');
+            }}
           />
         ) : activeTab === 'customers' ? (
           /* Customers Tab */

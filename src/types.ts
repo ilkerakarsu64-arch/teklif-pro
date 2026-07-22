@@ -58,6 +58,24 @@ export interface ProposalItem {
   total: number;
 }
 
+export type InvoiceStatus = 'BEKLIYOR' | 'ODENDI' | 'GECTI' | 'IPTAL';
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  proposalId?: string;
+  proposalNumber?: string;
+  customer: Customer;
+  issueDate: string;
+  dueDate: string;
+  status: InvoiceStatus;
+  amount: number;
+  paidAmount: number;
+  currency: 'TRY' | 'USD' | 'EUR' | 'GBP';
+  notes?: string;
+  createdAt: string;
+}
+
 export interface Customer {
   id: string;
   name: string;

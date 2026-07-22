@@ -4,7 +4,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import nodemailer from "nodemailer";
 import os from "os";
-import { Proposal, AppNotification, EmailLog, Customer, AppSettings, User } from "./src/types.ts";
+import { Proposal, AppNotification, EmailLog, Customer, AppSettings, User, Invoice } from "./src/types.ts";
 import { generateProposalEmailHtml } from "./src/utils/emailTemplate.ts";
 import {
   getDb,
@@ -21,6 +21,11 @@ import {
   insertProposal,
   updateProposal,
   deleteProposal,
+  getAllInvoices,
+  getInvoiceById,
+  insertInvoice,
+  updateInvoice,
+  deleteInvoice,
   updateCustomerInAllProposals,
   getNotifications,
   insertNotification,
@@ -508,6 +513,78 @@ async function startServer() {
     try {
       await deleteProposal(req.params.id);
       res.json({ success: true, message: "Teklif silindi" });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // GET /api/invoices
+  app.get("/api/invoices", async (_req, res) => {
+    try {
+      res.json(await getAllInvoices());
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // GET /api/invoices/:id
+  app.get("/api/invoices/:id", async (req, res) => {
+    try {
+      const inv = await getInvoiceById(req.params.id);
+      if (!inv) return res.status(404).json({ error: "Fatura bulunamadı" });
+      res.json(inv);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /api/invoices - Create new invoice
+  app.post("/api/invoices", async (req, res) => {
+    try {
+      const existing = await getAllInvoices();
+      const year = new Date().getFullYear();
+      const count = existing.length + 1;
+      const defaultInvNum = `FTR-${year}-${String(count).padStart(3, '0')}`;
+
+      const newInvoice: Invoice = {
+        id: `inv-${Date.now()}`,
+        invoiceNumber: req.body.invoiceNumber || defaultInvNum,
+        proposalId: req.body.proposalId || undefined,
+        proposalNumber: req.body.proposalNumber || undefined,
+        customer: req.body.customer,
+        issueDate: req.body.issueDate || new Date().toISOString().split('T')[0],
+        dueDate: req.body.dueDate || new Date(Date.now() + 14 * 24 * 3600 * 1000).toISOString().split('T')[0],
+        status: req.body.status || 'BEKLIYOR',
+        amount: Number(req.body.amount) || 0,
+        paidAmount: Number(req.body.paidAmount) || 0,
+        currency: req.body.currency || 'TRY',
+        notes: req.body.notes || undefined,
+        createdAt: new Date().toISOString()
+      };
+
+      await insertInvoice(newInvoice);
+      res.status(201).json(newInvoice);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // PUT /api/invoices/:id
+  app.put("/api/invoices/:id", async (req, res) => {
+    try {
+      await updateInvoice(req.params.id, req.body);
+      const updated = await getInvoiceById(req.params.id);
+      res.json(updated);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // DELETE /api/invoices/:id
+  app.delete("/api/invoices/:id", async (req, res) => {
+    try {
+      await deleteInvoice(req.params.id);
+      res.json({ success: true, message: "Fatura silindi" });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

@@ -2,7 +2,7 @@ import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
 import path from "path";
 import bcrypt from "bcrypt";
-import { Customer, Proposal, AppNotification, EmailLog, AppSettings, User } from "./types";
+import { Customer, Proposal, AppNotification, EmailLog, AppSettings, User, Invoice } from "./types";
 import { initialCustomers, initialProposals, initialNotifications } from "./data/mockData";
 import { DEFAULT_USERS } from "./utils/auth";
 
@@ -159,6 +159,25 @@ async function initializeDatabase() {
       ipAddress TEXT,
       userAgent TEXT,
       details TEXT,
+      createdAt TEXT NOT NULL
+    )
+  `);
+
+  // 9. Invoices Table
+  await d.exec(`
+    CREATE TABLE IF NOT EXISTS invoices (
+      id TEXT PRIMARY KEY,
+      invoiceNumber TEXT NOT NULL,
+      proposalId TEXT,
+      proposalNumber TEXT,
+      customerJson TEXT NOT NULL,
+      issueDate TEXT NOT NULL,
+      dueDate TEXT NOT NULL,
+      status TEXT NOT NULL,
+      amount REAL NOT NULL,
+      paidAmount REAL NOT NULL,
+      currency TEXT NOT NULL,
+      notes TEXT,
       createdAt TEXT NOT NULL
     )
   `);
@@ -948,4 +967,104 @@ export async function getAuthAuditStats(days: number = 30): Promise<{
     uniqueUsers: uniqueUsersResult?.count || 0,
     topActions: topActions.map(r => ({ action: r.action, count: r.count }))
   };
+}
+
+// ----------------------------------------------------
+// INVOICE DB HELPERS
+// ----------------------------------------------------
+export async function getAllInvoices(): Promise<Invoice[]> {
+  const d = await getDb();
+  const rows = await d.all('SELECT * FROM invoices ORDER BY createdAt DESC');
+  return rows.map(r => ({
+    id: r.id,
+    invoiceNumber: r.invoiceNumber,
+    proposalId: r.proposalId || undefined,
+    proposalNumber: r.proposalNumber || undefined,
+    customer: JSON.parse(r.customerJson),
+    issueDate: r.issueDate,
+    dueDate: r.dueDate,
+    status: r.status,
+    amount: r.amount,
+    paidAmount: r.paidAmount,
+    currency: r.currency,
+    notes: r.notes || undefined,
+    createdAt: r.createdAt
+  }));
+}
+
+export async function getInvoiceById(id: string): Promise<Invoice | null> {
+  const d = await getDb();
+  const r = await d.get('SELECT * FROM invoices WHERE id = ?', id);
+  if (!r) return null;
+  return {
+    id: r.id,
+    invoiceNumber: r.invoiceNumber,
+    proposalId: r.proposalId || undefined,
+    proposalNumber: r.proposalNumber || undefined,
+    customer: JSON.parse(r.customerJson),
+    issueDate: r.issueDate,
+    dueDate: r.dueDate,
+    status: r.status,
+    amount: r.amount,
+    paidAmount: r.paidAmount,
+    currency: r.currency,
+    notes: r.notes || undefined,
+    createdAt: r.createdAt
+  };
+}
+
+export async function insertInvoice(invoice: Invoice): Promise<void> {
+  const d = await getDb();
+  await d.run(
+    `INSERT INTO invoices (id, invoiceNumber, proposalId, proposalNumber, customerJson, issueDate, dueDate, status, amount, paidAmount, currency, notes, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      invoice.id,
+      invoice.invoiceNumber,
+      invoice.proposalId || null,
+      invoice.proposalNumber || null,
+      JSON.stringify(invoice.customer),
+      invoice.issueDate,
+      invoice.dueDate,
+      invoice.status,
+      invoice.amount,
+      invoice.paidAmount,
+      invoice.currency,
+      invoice.notes || null,
+      invoice.createdAt
+    ]
+  );
+}
+
+export async function updateInvoice(id: string, invoice: Partial<Invoice>): Promise<void> {
+  const d = await getDb();
+  const existing = await getInvoiceById(id);
+  if (!existing) return;
+
+  const merged = { ...existing, ...invoice };
+
+  await d.run(
+    `UPDATE invoices 
+     SET invoiceNumber = ?, proposalId = ?, proposalNumber = ?, customerJson = ?, issueDate = ?, dueDate = ?, status = ?, amount = ?, paidAmount = ?, currency = ?, notes = ?
+     WHERE id = ?`,
+    [
+      merged.invoiceNumber,
+      merged.proposalId || null,
+      merged.proposalNumber || null,
+      JSON.stringify(merged.customer),
+      merged.issueDate,
+      merged.dueDate,
+      merged.status,
+      merged.amount,
+      merged.paidAmount,
+      merged.currency,
+      merged.notes || null,
+      id
+    ]
+  );
+}
+
+export async function deleteInvoice(id: string): Promise<void> {
+  const d = await getDb();
+  await d.run('DELETE FROM invoices WHERE id = ?', id);
 }

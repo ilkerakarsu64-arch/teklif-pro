@@ -12,12 +12,13 @@ import {
   Settings as SettingsIcon,
   LogOut,
   Menu,
-  X
+  X,
+  Receipt
 } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: 'dashboard' | 'proposals' | 'customers' | 'reports' | 'settings';
-  setActiveTab: (tab: 'dashboard' | 'proposals' | 'customers' | 'reports' | 'settings') => void;
+  activeTab: 'dashboard' | 'proposals' | 'invoices' | 'customers' | 'reports' | 'settings';
+  setActiveTab: (tab: 'dashboard' | 'proposals' | 'invoices' | 'customers' | 'reports' | 'settings') => void;
   onNewProposal: () => void;
   unreadCount: number;
   onOpenNotifications: () => void;
@@ -39,7 +40,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const permissions = currentUser ? getUserPermissions(currentUser.role) : getUserPermissions('ADMIN');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleNavClick = (tab: 'dashboard' | 'proposals' | 'customers' | 'reports' | 'settings') => {
+  const handleNavClick = (tab: 'dashboard' | 'proposals' | 'invoices' | 'customers' | 'reports' | 'settings') => {
     setActiveTab(tab);
     setMobileMenuOpen(false);
   };
@@ -55,6 +56,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       id: 'proposals' as const,
       label: 'Teklifler',
       icon: FileText,
+      show: true
+    },
+    {
+      id: 'invoices' as const,
+      label: 'Fatura Takibi',
+      icon: Receipt,
       show: true
     },
     {
