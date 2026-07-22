@@ -1,33 +1,17 @@
-import html2pdf from 'html2pdf.js';
-export { createProposalPdfDocument, createAndSaveVectorPdf } from './pdfGenerator';
+import { Proposal, AppSettings } from '../types';
 
-export const downloadProposalPdf = async (element: HTMLElement | null, filename: string): Promise<void> => {
-  if (!element) return;
+/**
+ * Invokes the browser's native PDF print engine (window.print)
+ * with pixel-perfect @media print CSS matching the exact visual screen design of the proposal.
+ */
+export const downloadProposalPdf = async (element: HTMLElement | null, filename?: string): Promise<void> => {
+  window.print();
+};
 
-  try {
-    // Resolve html2pdf function safely for both CJS and ESM bundlers (Vite)
-    const html2pdfLib = (html2pdf as any)?.default || html2pdf;
+export const createAndSaveVectorPdf = (proposal: Proposal, settings?: AppSettings) => {
+  window.print();
+};
 
-    if (typeof html2pdfLib === 'function') {
-      const opt = {
-        margin:       [8, 8, 8, 8],
-        filename:     filename.endsWith('.pdf') ? filename : `${filename}.pdf`,
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { 
-          scale: 2, 
-          useCORS: true, 
-          logging: false, 
-          scrollY: 0,
-          windowWidth: 1200
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-
-      const worker = html2pdfLib().set(opt).from(element);
-      await worker.save();
-    }
-  } catch (err) {
-    console.error('PDF generation error:', err);
-  }
+export const createProposalPdfDocument = (proposal: Proposal, settings?: AppSettings) => {
+  window.print();
 };

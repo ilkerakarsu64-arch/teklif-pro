@@ -24,22 +24,54 @@
   background: #94a3b8;
 }
 
-/* Print / PDF Styles for Separate Devices Output */
+/* Print / PDF Styles for Exact Screen Proposal Output using Native Browser PDF Engine */
 @media print {
   @page {
-    size: A4;
-    margin: 12mm;
+    size: A4 portrait;
+    margin: 8mm 10mm;
   }
 
-  body {
+  html, body {
     background-color: #ffffff !important;
     color: #0f172a !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  .print\:hidden {
+  /* Hide sidebars, navigation bars, action buttons, drawers, and overlay popups */
+  aside,
+  header,
+  nav,
+  button,
+  .print\:hidden,
+  .no-print {
     display: none !important;
+  }
+
+  /* Reset layout paddings and expand content area */
+  body, 
+  #root, 
+  main, 
+  .flex-1,
+  .md\:pl-64 {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure proposal paper container is 100% clean and identical to visual screen design */
+  #proposal-paper-container,
+  .printable-proposal {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    background-color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .device-print-card {
@@ -58,4 +90,3 @@
     print-color-adjust: exact !important;
   }
 }
-
