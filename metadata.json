@@ -1,0 +1,6 @@
+{
+  "name": "Teklif Yönetim Sistemi",
+  "description": "Teklif oluşturma, e-posta ile gönderme, onay/ret takibi ve canlı bildirim yönetim platformu",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+}
+
+/* Custom crisp geometric scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Print / PDF Styles for Separate Devices Output */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .device-print-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 18px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 4px !important;
+    background-color: #ffffff !important;
+  }
+
+  .device-header-print {
+    background-color: #f1f5f9 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+

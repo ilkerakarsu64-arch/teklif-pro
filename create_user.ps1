@@ -1,0 +1,2 @@
+$json = '{"username":"birtan","password":"birtan123","name":"Birtan Admin","email":"birtan@example.com","role":"ADMIN","isActive":true}'
+Invoke-RestMethod -Uri 'http://localhost:3000/api/users' -Method Post -Body $json -ContentType 'application/json'
