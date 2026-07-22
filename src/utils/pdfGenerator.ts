@@ -236,5 +236,17 @@ export function createProposalPdfDocument(proposal: Proposal, settings?: AppSett
 
 export function createAndSaveVectorPdf(proposal: Proposal, settings?: AppSettings) {
   const doc = createProposalPdfDocument(proposal, settings);
-  doc.save(`Teklif_${proposal.proposalNumber}.pdf`);
+  const fileName = `Teklif_${proposal.proposalNumber}.pdf`;
+
+  // 1. Preview PDF in a new tab for instant display
+  try {
+    const pdfBlob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(pdfBlob);
+    window.open(blobUrl, '_blank');
+  } catch (err) {
+    console.warn('PDF preview popup warning:', err);
+  }
+
+  // 2. Download PDF file directly to disk
+  doc.save(fileName);
 }
