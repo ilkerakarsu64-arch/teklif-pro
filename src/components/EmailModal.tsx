@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Proposal, AppSettings } from '../types';
 import { formatCurrency } from '../utils/formatters';
-import { openDefaultMailClient } from '../utils/mailClient';
-import { Mail, Send, X, CheckCircle2, ExternalLink } from 'lucide-react';
+import { openDefaultMailClientWithPdf } from '../utils/mailClient';
+import { Mail, Send, X, CheckCircle2, ExternalLink, Paperclip } from 'lucide-react';
 
 interface EmailModalProps {
   proposal: Proposal;
@@ -22,9 +22,8 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   const [toEmail, setToEmail] = useState(proposal.customer.email || '');
   const [subject, setSubject] = useState(`${proposal.proposalNumber} - ${proposal.title}`);
   const [customMessage, setCustomMessage] = useState(
-    `Sayın ${proposal.customer.name},\n\n` +
-    `Firmanız için hazırladığımız "${proposal.title}" başlıklı teklifimiz ekte ve aşağıdaki bağlantıda bilgilerinize sunulmuştur.\n` +
-    `Teklifimizi incelemek ve çevrim içi onaylamak için e-postadaki butona tıklayabilirsiniz.`
+    `Sayın ${proposal.customer.name || proposal.customer.companyName},\n\n` +
+    `Sizler için özenle hazırladığımız "${proposal.title}" başlıklı teklif belgemiz ve fiyatlandırma detaylarımız bilgilerinize sunulmuştur.`
   );
   const [isSending, setIsSending] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
@@ -205,18 +204,27 @@ export const EmailModal: React.FC<EmailModalProps> = ({
               </div>
             </div>
 
+            {/* PDF Attachment Info Banner */}
+            <div className="flex items-center gap-2 p-2.5 bg-blue-50 border border-blue-200 rounded-sm text-xs text-blue-900">
+              <Paperclip className="w-4 h-4 text-blue-600 shrink-0" />
+              <span>
+                <strong>Teklif PDF Belgesi:</strong> <code className="font-mono bg-blue-100 px-1.5 py-0.5 rounded text-blue-950 font-bold">Teklif_{proposal.proposalNumber}.pdf</code> belgesi indirilecek ve mail programınız çalıştırılacaktır.
+              </span>
+            </div>
+
             {/* Footer Buttons */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-2 pt-3 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => {
-                  openDefaultMailClient(proposal, settings, toEmail, customMessage);
+                  const paperElement = document.getElementById('proposal-paper-container');
+                  openDefaultMailClientWithPdf(proposal, paperElement, settings, toEmail, customMessage);
                 }}
                 className="w-full sm:w-auto px-4 py-2.5 rounded-sm bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 border border-amber-400 shadow-xs transition-colors"
-                title="Bilgisayarınızda yüklü varsayılan e-posta programını (Outlook, Windows Mail, Thunderbird) çalıştırır ve teklif metnini düzenli olarak doldurur"
+                title="Teklif PDF belgesini indirir ve bilgisayarınızdaki varsayılan mail uygulamasını (Outlook) çalıştırır"
               >
                 <ExternalLink className="w-4 h-4" />
-                <span>Mail Programı ile Aç (Outlook / PC)</span>
+                <span>Mail Programında Aç + PDF İndir (Outlook)</span>
               </button>
 
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">

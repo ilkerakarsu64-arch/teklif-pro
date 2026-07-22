@@ -377,7 +377,7 @@ export const ProposalDetail: React.FC<ProposalDetailProps> = ({
       )}
 
       {/* Main Printed Proposal Paper Document */}
-      <div ref={proposalPaperRef} className="bg-white text-slate-900 rounded-sm border border-slate-200 shadow-sm p-8 sm:p-12 space-y-8 print:shadow-none print:border-none print:p-0">
+      <div id="proposal-paper-container" ref={proposalPaperRef} className="bg-white text-slate-900 rounded-sm border border-slate-200 shadow-sm p-8 sm:p-12 space-y-8 print:shadow-none print:border-none print:p-0">
         
         {/* Header Branding */}
         <div className="flex flex-col md:flex-row justify-between items-start gap-8 border-b border-slate-200 pb-8">
