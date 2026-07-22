@@ -164,3 +164,31 @@ export function playNotificationSound(type: 'ONAY' | 'RET' | 'GORUNTULEME') {
     console.log('Audio playback error:', err);
   }
 }
+
+export function copyToClipboard(text: string): boolean {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Fallback if clipboard API throws security exception
+  }
+
+  try {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    return successful;
+  } catch (err) {
+    console.error('Copy fallback failed:', err);
+    return false;
+  }
+}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Proposal, AppSettings, User } from '../types';
 import { getUserPermissions } from '../utils/auth';
-import { formatCurrency, formatDate, formatDateTime, getStatusBadgeConfig } from '../utils/formatters';
+import { formatCurrency, formatDate, formatDateTime, getStatusBadgeConfig, copyToClipboard } from '../utils/formatters';
 import { 
   ArrowLeft, 
   Send, 
@@ -18,7 +18,8 @@ import {
   History,
   Zap,
   Trash2,
-  Download
+  Download,
+  ExternalLink
 } from 'lucide-react';
 import { downloadProposalPdf, createAndSaveVectorPdf } from '../utils/pdfDownloader';
 
@@ -203,11 +204,16 @@ export const ProposalDetail: React.FC<ProposalDetailProps> = ({
         }
       ];
 
+  const portalUrl = `${window.location.origin}${window.location.pathname}#/customer/teklif/${proposal.id}`;
+
   const copyCustomerLink = () => {
-    const portalUrl = `${window.location.origin}${window.location.pathname}#/customer/teklif/${proposal.id}`;
-    navigator.clipboard.writeText(portalUrl);
+    copyToClipboard(portalUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const openCustomerPortal = () => {
+    window.open(portalUrl, '_blank');
   };
 
   const handlePrint = () => {
@@ -218,14 +224,13 @@ export const ProposalDetail: React.FC<ProposalDetailProps> = ({
     <div className="space-y-6 max-w-5xl mx-auto print:max-w-none print:p-0">
       
       {/* Top Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
-        
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-sm border border-slate-200 shadow-2xs print:hidden">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-sm text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-200/60 border border-slate-300 transition-colors self-start"
+          className="px-3 py-1.5 rounded-sm bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Teklif Listesine Dön</span>
+          <span>Geri Dön</span>
         </button>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -240,11 +245,21 @@ export const ProposalDetail: React.FC<ProposalDetailProps> = ({
           </button>
 
           <button
+            onClick={openCustomerPortal}
+            className="px-3.5 py-2 rounded-sm bg-white hover:bg-slate-100 text-blue-700 border border-blue-300 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+            title="Müşteri onay portalını yeni sekmede aç"
+          >
+            <ExternalLink className="w-4 h-4 text-blue-600" />
+            <span>Müşteri Portalı (Aç)</span>
+          </button>
+
+          <button
             onClick={copyCustomerLink}
             className="px-3.5 py-2 rounded-sm bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            title="Müşteri onay bağlantısını panoya kopyala"
           >
             {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-            <span>{copied ? 'Link Kopyalandı!' : 'Müşteri Bağlantısı'}</span>
+            <span>{copied ? 'Link Kopyalandı!' : 'Link Kopyala'}</span>
           </button>
 
           <button

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Proposal, User } from '../types';
 import { getUserPermissions } from '../utils/auth';
-import { formatCurrency, formatDate, getStatusBadgeConfig } from '../utils/formatters';
+import { formatCurrency, formatDate, getStatusBadgeConfig, copyToClipboard } from '../utils/formatters';
 import { createAndSaveVectorPdf } from '../utils/pdfDownloader';
 import { 
   Search, 
@@ -61,9 +61,10 @@ export const ProposalList: React.FC<ProposalListProps> = ({
   const copyCustomerLink = (prop: Proposal, e: React.MouseEvent) => {
     e.stopPropagation();
     const portalUrl = `${window.location.origin}${window.location.pathname}#/customer/teklif/${prop.id}`;
-    navigator.clipboard.writeText(portalUrl);
+    copyToClipboard(portalUrl);
     setCopiedId(prop.id);
     setTimeout(() => setCopiedId(null), 2000);
+    window.open(portalUrl, '_blank');
   };
 
   const tabs = [
