@@ -145,16 +145,16 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   const goalProgressPercent = Math.min(100, Math.round((totalApprovedAmount / monthlyGoal) * 100));
 
   return (
-    <div className="space-y-6 antialiased">
+    <div className="space-y-6 antialiased animate-in fade-in slide-in-from-bottom-2 duration-500">
       
       {/* ------------------------------------------------------------- */}
-      {/* Top Header & Quick Actions (Matches DetailedReports Style)     */}
+      {/* Top Header & Quick Actions (Animated Banner)                  */}
       {/* ------------------------------------------------------------- */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition-all duration-300">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-600">
-              <Sparkles className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-600 shadow-2xs">
+              <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
             </div>
             <h1 className="text-xl font-bold text-slate-900 tracking-tight">
               Yönetici Kontrol Paneli
@@ -169,14 +169,14 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
           <button
             onClick={onOpenCustomerSimulator}
-            className="px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition-colors shadow-xs flex items-center gap-1.5 border border-amber-400 cursor-pointer"
+            className="px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition-all duration-200 shadow-xs hover:shadow-md active:scale-95 flex items-center gap-1.5 border border-amber-400 cursor-pointer"
           >
-            <Zap className="w-3.5 h-3.5 fill-slate-950" />
+            <Zap className="w-3.5 h-3.5 fill-slate-950 animate-bounce" />
             <span>Canlı Bildirimi Test Et</span>
           </button>
           <button
             onClick={onNewProposal}
-            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors shadow-xs flex items-center gap-1.5 border border-blue-500 cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all duration-200 shadow-xs hover:shadow-md active:scale-95 flex items-center gap-1.5 border border-blue-500 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Yeni Teklif Oluştur</span>
@@ -188,9 +188,9 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Expiring Soon Alert Bar (If Any)                              */}
       {/* ------------------------------------------------------------- */}
       {expiringProposals.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs animate-in fade-in zoom-in-95 duration-300">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-100 text-amber-700 shrink-0 border border-amber-200">
+            <div className="p-2 rounded-lg bg-amber-100 text-amber-700 shrink-0 border border-amber-200 animate-pulse">
               <AlertTriangle className="w-4 h-4" />
             </div>
             <div>
@@ -204,7 +204,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
           </div>
           <button
             onClick={() => onSelectProposal(expiringProposals[0].id)}
-            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs transition-colors shrink-0 flex items-center gap-1 cursor-pointer shadow-xs"
+            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs transition-all duration-200 shrink-0 flex items-center gap-1 cursor-pointer shadow-xs active:scale-95"
           >
             <span>İncele</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -213,18 +213,18 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       )}
 
       {/* ------------------------------------------------------------- */}
-      {/* Quick Action Shortcuts Bar                                    */}
+      {/* Quick Action Shortcuts Bar (Animated Tiles)                   */}
       {/* ------------------------------------------------------------- */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <button
           onClick={onNewProposal}
-          className="p-3.5 bg-white border border-slate-200 hover:border-blue-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
+          className="p-3.5 bg-white border border-slate-200 hover:border-blue-500 rounded-xl shadow-xs hover:shadow-md hover:-translate-y-1 text-left transition-all duration-300 flex items-center gap-3 group cursor-pointer active:scale-95"
         >
-          <div className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 group-hover:scale-105 transition-transform">
+          <div className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
             <PlusCircle className="w-4 h-4" />
           </div>
           <div>
-            <div className="font-bold text-xs text-slate-900">Hızlı Teklif Ekle</div>
+            <div className="font-bold text-xs text-slate-900 group-hover:text-blue-600 transition-colors">Hızlı Teklif Ekle</div>
             <div className="text-[10px] text-slate-500">Yeni teklif formu aç</div>
           </div>
         </button>
@@ -232,13 +232,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         {onOpenReports && (
           <button
             onClick={onOpenReports}
-            className="p-3.5 bg-white border border-slate-200 hover:border-emerald-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
+            className="p-3.5 bg-white border border-slate-200 hover:border-emerald-500 rounded-xl shadow-xs hover:shadow-md hover:-translate-y-1 text-left transition-all duration-300 flex items-center gap-3 group cursor-pointer active:scale-95"
           >
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 group-hover:scale-105 transition-transform">
+            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
               <FileBarChart2 className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-bold text-xs text-slate-900">Detaylı Raporlar</div>
+              <div className="font-bold text-xs text-slate-900 group-hover:text-emerald-600 transition-colors">Detaylı Raporlar</div>
               <div className="text-[10px] text-slate-500">Finansal analiz ve tablo</div>
             </div>
           </button>
@@ -246,13 +246,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
         <button
           onClick={onOpenCustomerSimulator}
-          className="p-3.5 bg-white border border-slate-200 hover:border-amber-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
+          className="p-3.5 bg-white border border-slate-200 hover:border-amber-500 rounded-xl shadow-xs hover:shadow-md hover:-translate-y-1 text-left transition-all duration-300 flex items-center gap-3 group cursor-pointer active:scale-95"
         >
-          <div className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100 group-hover:scale-105 transition-transform">
+          <div className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
             <Zap className="w-4 h-4 fill-amber-500" />
           </div>
           <div>
-            <div className="font-bold text-xs text-slate-900">Müşteri Simülatörü</div>
+            <div className="font-bold text-xs text-slate-900 group-hover:text-amber-600 transition-colors">Müşteri Simülatörü</div>
             <div className="text-[10px] text-slate-500">Onay bildirim testi</div>
           </div>
         </button>
@@ -260,13 +260,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         {onOpenSettings && (
           <button
             onClick={onOpenSettings}
-            className="p-3.5 bg-white border border-slate-200 hover:border-purple-500 rounded-xl shadow-xs text-left transition-all flex items-center gap-3 group cursor-pointer"
+            className="p-3.5 bg-white border border-slate-200 hover:border-purple-500 rounded-xl shadow-xs hover:shadow-md hover:-translate-y-1 text-left transition-all duration-300 flex items-center gap-3 group cursor-pointer active:scale-95"
           >
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg border border-purple-100 group-hover:scale-105 transition-transform">
+            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg border border-purple-100 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
               <SettingsIcon className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-bold text-xs text-slate-900">Sistem Ayarları</div>
+              <div className="font-bold text-xs text-slate-900 group-hover:text-purple-600 transition-colors">Sistem Ayarları</div>
               <div className="text-[10px] text-slate-500">Firma & İnternet URL</div>
             </div>
           </button>
@@ -274,34 +274,34 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* Key Metric KPI Cards Grid (Matches DetailedReports Style)      */}
+      {/* Key Metric KPI Cards Grid (Animated Float & Scale)             */}
       {/* ------------------------------------------------------------- */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Approved Revenue Card */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-emerald-300 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-emerald-400 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Onaylanan Ciro</span>
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100">
+            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 group-hover:scale-110 transition-transform duration-300">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight group-hover:text-emerald-600 transition-colors">
               {formatCurrency(totalApprovedAmount, 'TRY')}
             </div>
             <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-emerald-600 font-semibold">
               <span>{approvedProposals.length} Onaylı Teklif</span>
-              <TrendingUp className="w-4 h-4" />
+              <TrendingUp className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
         </div>
 
         {/* Pending Opportunities Card */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-amber-300 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-amber-400 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Onay Bekleyen</span>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100">
+            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100 group-hover:scale-110 transition-transform duration-300">
               <Clock className="w-4 h-4" />
             </div>
           </div>
@@ -317,15 +317,15 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
 
         {/* Total Proposal Volume & Conversion Rate */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-blue-300 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-blue-400 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Toplam Teklif & Oran</span>
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 group-hover:scale-110 transition-transform duration-300">
               <FileText className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight group-hover:text-blue-600 transition-colors">
               {totalCount} Adet
             </div>
             <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
@@ -336,10 +336,10 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
 
         {/* Devices & Kalem Metrics Card */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-purple-300 transition-all">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:border-purple-400 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Cihaz & İşlem Kalemi</span>
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg border border-purple-100">
+            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg border border-purple-100 group-hover:scale-110 transition-transform duration-300">
               <Laptop className="w-4 h-4" />
             </div>
           </div>
@@ -357,12 +357,12 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* Target Revenue Progress & Online View Rates                   */}
+      {/* Target Revenue Progress & Online View Rates (Animated Bars)   */}
       {/* ------------------------------------------------------------- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Monthly Target Progress */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:shadow-sm transition-shadow">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-blue-600" />
@@ -375,7 +375,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
           <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
             <div 
-              className="h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full transition-all duration-1000"
+              className="h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full transition-all duration-1000 ease-out shadow-xs"
               style={{ width: `${goalProgressPercent}%` }}
             />
           </div>
@@ -387,10 +387,10 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
 
         {/* Customer Online View Rate Meter */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:shadow-sm transition-shadow">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <Eye className="w-4 h-4 text-amber-500" />
+              <Eye className="w-4 h-4 text-amber-500 animate-pulse" />
               <span className="font-bold text-slate-900 uppercase tracking-wider">Müşteri Online İnceleme Etkileşimi</span>
             </div>
             <div className="font-mono text-slate-700">
@@ -400,7 +400,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
           <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
             <div 
-              className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-1000"
+              className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-1000 ease-out shadow-xs"
               style={{ width: `${viewRate}%` }}
             />
           </div>
@@ -414,12 +414,12 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* Analytics Charts Section (Recharts)                           */}
+      {/* Analytics Charts Section (Smooth Recharts Animations)          */}
       {/* ------------------------------------------------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Revenue Trend Area Chart (8 cols) */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-xs">
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-xs hover:shadow-sm transition-shadow">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
               <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 uppercase">
@@ -482,6 +482,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                   strokeWidth={2.5}
                   fillOpacity={1} 
                   fill="url(#colorCiro)" 
+                  isAnimationActive={true}
+                  animationDuration={1200}
                 />
                 <Area 
                   type="monotone" 
@@ -492,6 +494,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                   strokeDasharray="4 4"
                   fillOpacity={1} 
                   fill="url(#colorHacim)" 
+                  isAnimationActive={true}
+                  animationDuration={1200}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -499,7 +503,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
 
         {/* Status Breakdown Chart (4 cols) */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
           <div className="border-b border-slate-100 pb-3">
             <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 uppercase">
               <PieChartIcon className="w-4 h-4 text-blue-600" />
@@ -524,6 +528,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                     outerRadius={75}
                     paddingAngle={4}
                     dataKey="value"
+                    isAnimationActive={true}
+                    animationDuration={1000}
                   >
                     {statusPieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -573,7 +579,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Column: Recent Proposals (8 cols) */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-xs flex flex-col overflow-hidden">
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-xs hover:shadow-sm transition-shadow flex flex-col overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <div>
               <h2 className="font-bold text-slate-900 text-sm tracking-tight uppercase">Son Oluşturulan Teklifler</h2>
@@ -607,7 +613,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                     <tr
                       key={proposal.id}
                       onClick={() => onSelectProposal(proposal.id)}
-                      className="hover:bg-blue-50/50 cursor-pointer transition-colors"
+                      className="hover:bg-blue-50/60 cursor-pointer transition-all duration-200"
                     >
                       <td className="px-6 py-4">
                         <div className="font-bold text-slate-900 flex items-center gap-2">
@@ -662,13 +668,16 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
 
         {/* Right Column: Real-time Notifications Feed (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        <div className="lg:col-span-4 flex flex-col bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden hover:shadow-sm transition-shadow">
           <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
             <h3 className="font-bold text-xs uppercase tracking-widest text-slate-900 flex items-center gap-2">
-              <Bell className="w-4 h-4 text-blue-600" />
+              <Bell className="w-4 h-4 text-blue-600 animate-pulse" />
               <span>Canlı Bildirim Akışı</span>
             </h3>
-            <span className="bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">CANLI</span>
+            <span className="bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+              <span>CANLI</span>
+            </span>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[420px]">
@@ -704,7 +713,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                   <div
                     key={notif.id}
                     onClick={() => onSelectProposal(notif.proposalId)}
-                    className={`p-3.5 ${borderClass} rounded-r-lg cursor-pointer hover:brightness-95 transition-all text-xs space-y-1`}
+                    className={`p-3.5 ${borderClass} rounded-r-lg cursor-pointer hover:-translate-x-0.5 hover:shadow-xs transition-all duration-200 text-xs space-y-1`}
                   >
                     <div className="flex justify-between items-start">
                       <span className={`text-[10px] font-bold uppercase tracking-wider ${typeColor}`}>
@@ -732,9 +741,9 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
           <div className="p-4 bg-slate-50 border-t border-slate-200">
             <button
               onClick={onOpenCustomerSimulator}
-              className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-amber-400 shadow-xs cursor-pointer"
+              className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 border border-amber-400 shadow-xs cursor-pointer active:scale-95"
             >
-              <Zap className="w-3.5 h-3.5 fill-slate-950" />
+              <Zap className="w-3.5 h-3.5 fill-slate-950 animate-bounce" />
               <span>Müşteri Onayını Şimdi Simüle Et</span>
             </button>
           </div>
