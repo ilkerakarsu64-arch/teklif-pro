@@ -140,10 +140,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
     { name: 'Taslak', value: draftProposals.length, color: '#64748b' }
   ].filter(item => item.value > 0);
 
-  // Target Revenue Goal (Mock Goal for Progress Display)
-  const monthlyGoal = 500000;
-  const goalProgressPercent = Math.min(100, Math.round((totalApprovedAmount / monthlyGoal) * 100));
-
   return (
     <div className="space-y-6 antialiased animate-in fade-in slide-in-from-bottom-2 duration-500 bg-slate-100 p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs">
       
@@ -357,60 +353,30 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* Target Revenue Progress & Online View Rates (Animated Bars)   */}
+      {/* Online View Rates (Animated Bar)                             */}
       {/* ------------------------------------------------------------- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:shadow-sm transition-shadow">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4 text-amber-500 animate-pulse" />
+            <span className="font-bold text-slate-900 uppercase tracking-wider">Müşteri Online İnceleme Etkileşimi</span>
+          </div>
+          <div className="font-mono text-slate-700">
+            <strong className="text-amber-600 font-bold">{viewedProposalsCount}</strong> / {totalCount} Teklif İncenlendi
+          </div>
+        </div>
+
+        <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+          <div 
+            className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-1000 ease-out shadow-xs"
+            style={{ width: `${viewRate}%` }}
+          />
+        </div>
         
-        {/* Monthly Target Progress */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:shadow-sm transition-shadow">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-blue-600" />
-              <span className="font-bold text-slate-900 uppercase tracking-wider">Aylık Ciro Hedefi Performansı</span>
-            </div>
-            <div className="font-mono text-slate-700">
-              <strong className="text-emerald-600 font-bold">{formatCurrency(totalApprovedAmount, 'TRY')}</strong> / {formatCurrency(monthlyGoal, 'TRY')}
-            </div>
-          </div>
-
-          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
-            <div 
-              className="h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full transition-all duration-1000 ease-out shadow-xs"
-              style={{ width: `${goalProgressPercent}%` }}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between text-[11px] text-slate-500">
-            <span>Hedef Tamamlanma Oranı</span>
-            <span className="font-bold text-slate-900 font-mono">%{goalProgressPercent}</span>
-          </div>
+        <div className="flex items-center justify-between text-[11px] text-slate-500">
+          <span>Müşteri İnceleme Oranı</span>
+          <span className="font-bold text-amber-600 font-mono">%{viewRate}</span>
         </div>
-
-        {/* Customer Online View Rate Meter */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3 hover:shadow-sm transition-shadow">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <Eye className="w-4 h-4 text-amber-500 animate-pulse" />
-              <span className="font-bold text-slate-900 uppercase tracking-wider">Müşteri Online İnceleme Etkileşimi</span>
-            </div>
-            <div className="font-mono text-slate-700">
-              <strong className="text-amber-600 font-bold">{viewedProposalsCount}</strong> / {totalCount} Teklif İncenlendi
-            </div>
-          </div>
-
-          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
-            <div 
-              className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-1000 ease-out shadow-xs"
-              style={{ width: `${viewRate}%` }}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between text-[11px] text-slate-500">
-            <span>Müşteri İnceleme Oranı</span>
-            <span className="font-bold text-amber-600 font-mono">%{viewRate}</span>
-          </div>
-        </div>
-
       </div>
 
       {/* ------------------------------------------------------------- */}
