@@ -17,23 +17,23 @@ export function generateSleekEmailText(
   if (customNote && customNote.trim()) {
     body += `${customNote.trim()}\n\n`;
   } else {
-    body += `Sizler için özenle hazırladığımız "${proposal.title}" projemize ait teklif belgemiz ve fiyatlandırma detaylarımız bilgilerinize sunulmuştur.\n\n`;
+    body += `Sizler için hazırladığımız "${proposal.title}" projemize ait teklif belgemiz ve fiyatlandırma detaylarımız bilgilerinize sunulmuştur.\n\n`;
   }
 
-  body += `──────────────────────────────────────────────────\n`;
-  body += `📋 TEKLİF ÖZETİ\n`;
-  body += `──────────────────────────────────────────────────\n`;
+  body += `==================================================\n`;
+  body += `📄 TEKLİF DETAYLARI\n`;
+  body += `==================================================\n`;
   body += `• Teklif No       : ${proposal.proposalNumber}\n`;
   body += `• Proje Başlığı   : ${proposal.title}\n`;
   body += `• Düzenleme Tarihi: ${formatDate(proposal.issueDate)}\n`;
   body += `• Son Geçerlilik  : ${formatDate(proposal.validUntilDate)}\n`;
   body += `• Toplam Tutar    : ${formatCurrency(proposal.grandTotal, proposal.currency)} (KDV Dahil)\n`;
-  body += `──────────────────────────────────────────────────\n\n`;
+  body += `==================================================\n\n`;
 
-  body += `🌐 Teklifi internet üzerinden incelemek ve çevrim içi onaylamak için tıklayın:\n`;
+  body += `👉 Teklifi internet üzerinden incelemek ve çevrim içi onaylamak için aşağıdaki bağlantıya tıklayın:\n`;
   body += `${portalUrl}\n\n`;
 
-  body += `Detaylı hizmet kalemlerini ekteki PDF dosyasından inceleyebilirsiniz.\n\n`;
+  body += `(Teklif belgenizin detaylı çıktısı ekteki PDF dosyasındadır.)\n\n`;
 
   body += `Saygılarımızla,\n`;
   body += `${companyName}\n`;

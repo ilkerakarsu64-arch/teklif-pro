@@ -200,24 +200,42 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                 </p>
 
                 {/* Offer Card inside Email */}
-                <div className="bg-white p-3 rounded-sm border border-slate-200 flex items-center justify-between">
-                  <div>
-                    <div className="font-bold text-slate-900">{proposal.title}</div>
-                    <div className="text-[11px] text-slate-500">Tutar: <strong className="font-mono text-slate-900">{formatCurrency(proposal.grandTotal, proposal.currency)}</strong></div>
+                <div className="bg-slate-900 p-3.5 rounded-sm text-white space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-sm text-white">{proposal.title}</div>
+                      <div className="text-xs text-slate-300">Tutar: <strong className="font-mono text-emerald-400 text-sm">{formatCurrency(proposal.grandTotal, proposal.currency)}</strong></div>
+                    </div>
+                    <a
+                      href={portalUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-sm font-bold text-xs inline-flex items-center gap-1.5 shadow-md border border-blue-400 transition-colors cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.open(portalUrl, '_blank');
+                      }}
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Teklifi İncele & Onayla</span>
+                    </a>
                   </div>
-                  <a
-                    href={portalUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-sm font-semibold text-xs inline-flex items-center gap-1.5 shadow-xs border border-blue-500 transition-colors cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      window.open(portalUrl, '_blank');
-                    }}
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Teklifi İncele & Onayla</span>
-                  </a>
+                  
+                  <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+                    <span>Doğrudan Tıklanabilir Bağlantı:</span>
+                    <a 
+                      href={portalUrl} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="text-blue-400 font-mono underline hover:text-blue-300 truncate max-w-[280px]"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.open(portalUrl, '_blank');
+                      }}
+                    >
+                      {portalUrl}
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
