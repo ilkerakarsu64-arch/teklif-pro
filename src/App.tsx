@@ -21,12 +21,20 @@ import { Bell, Sparkles, CheckCircle2, XCircle, Eye, Users, Plus, Mail, Building
 function getCustomerPortalId(): string | null {
   const hash = window.location.hash;
   const path = window.location.pathname;
-  
+  const search = window.location.search;
+
+  let rawId: string | null = null;
   if (hash.includes('/customer/teklif/')) {
-    return hash.split('/customer/teklif/')[1];
+    rawId = hash.split('/customer/teklif/')[1];
+  } else if (path.includes('/customer/teklif/')) {
+    rawId = path.split('/customer/teklif/')[1];
+  } else if (search.includes('proposalId=')) {
+    const params = new URLSearchParams(search);
+    rawId = params.get('proposalId');
   }
-  if (path.includes('/customer/teklif/')) {
-    return path.split('/customer/teklif/')[1];
+
+  if (rawId) {
+    return rawId.split('?')[0].split('#')[0].replace(/\/+$/, '');
   }
   return null;
 }

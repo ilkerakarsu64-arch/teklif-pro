@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppSettings, Proposal, Customer, User } from '../types';
 import { UserManagement } from './UserManagement';
+import { getPublicPortalUrl } from '../utils/formatters';
 import { 
   Building2, 
   FileText, 
@@ -425,12 +426,25 @@ export const Settings: React.FC<SettingsProps> = ({
                       Müşterilere gönderilen e-postalardaki ve linklerdeki teklif bağlantılarının internet üzerinden (dış ağlardan) erişilebilir olması için web adresi girin (Örn: <code className="bg-white dark:bg-slate-800 px-1 py-0.5 rounded font-mono font-bold text-blue-600">https://teklif-pro.onrender.com</code> veya localtunnel / ngrok adresi).
                     </p>
                     <input
-                      type="url"
-                      placeholder="https://teklif-pro.onrender.com"
+                      type="text"
+                      placeholder="https://funny-pigs-run.loca.lt"
                       value={formData.company.publicUrl || ''}
                       onChange={(e) => handleCompanyChange('publicUrl', e.target.value)}
                       className="w-full p-2.5 bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-sm font-mono text-xs text-slate-900 dark:text-slate-100 font-bold"
                     />
+                    {formData.company.publicUrl && (
+                      <div className="mt-1 text-[11px] text-blue-600 dark:text-blue-400 font-mono font-semibold flex items-center gap-1.5 flex-wrap">
+                        <span>Canlı Önizleme Bağlantı Formatı:</span>
+                        <a
+                          href={getPublicPortalUrl(proposals[0]?.id || 'ORNEK-TEKLIF-ID', { company: formData.company })}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="underline hover:text-blue-800 dark:hover:text-blue-300 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-blue-200"
+                        >
+                          {getPublicPortalUrl(proposals[0]?.id || 'ORNEK-TEKLIF-ID', { company: formData.company })}
+                        </a>
+                      </div>
+                    )}
                   </div>
 
                   <div>

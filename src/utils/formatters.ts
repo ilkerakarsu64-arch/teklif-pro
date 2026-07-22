@@ -196,14 +196,22 @@ export function copyToClipboard(text: string): boolean {
 export function getPublicPortalUrl(proposalId: string, settings?: any): string {
   const publicUrl = settings?.company?.publicUrl;
   if (publicUrl && typeof publicUrl === 'string' && publicUrl.trim()) {
-    const baseUrl = publicUrl.trim().replace(/\/+$/, '');
-    return `${baseUrl}/#/customer/teklif/${proposalId}`;
+    let clean = publicUrl.trim();
+    // Strip trailing hashes, customer paths or slashes if user copy-pasted full proposal URL
+    clean = clean.split('#')[0].split('/customer/')[0].replace(/\/+$/, '');
+    
+    // Add protocol if user omitted https:// or http://
+    if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+      clean = `https://${clean}`;
+    }
+    
+    return `${clean}/#/customer/teklif/${proposalId}`;
   }
 
   if (typeof window !== 'undefined' && window.location) {
     const origin = window.location.origin;
-    const pathname = window.location.pathname;
-    return `${origin}${pathname}#/customer/teklif/${proposalId}`;
+    const pathname = window.location.pathname.replace(/\/+$/, '');
+    return `${origin}${pathname}/#/customer/teklif/${proposalId}`;
   }
 
   return `http://localhost:3000/#/customer/teklif/${proposalId}`;

@@ -611,9 +611,14 @@ async function startServer() {
       const protocol = req.protocol || 'http';
       const host = req.get('host') || 'localhost:3000';
       const configuredPublicUrl = process.env.PUBLIC_URL || systemSettings.company?.publicUrl;
-      const hostOrigin = configuredPublicUrl && configuredPublicUrl.trim()
-        ? configuredPublicUrl.trim().replace(/\/+$/, '') + '/'
-        : `${protocol}://${host}/`;
+      let hostOrigin = `${protocol}://${host}/`;
+      if (configuredPublicUrl && typeof configuredPublicUrl === 'string' && configuredPublicUrl.trim()) {
+        let clean = configuredPublicUrl.trim().split('#')[0].split('/customer/')[0].replace(/\/+$/, '');
+        if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+          clean = `https://${clean}`;
+        }
+        hostOrigin = `${clean}/`;
+      }
 
       // Generate rich HTML email
       const htmlBody = generateProposalEmailHtml(proposal, systemSettings, customMessage, hostOrigin);
