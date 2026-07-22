@@ -709,6 +709,7 @@ function AppContent() {
       {emailModalProposal && (
         <EmailModal
           proposal={emailModalProposal}
+          settings={settings}
           isOpen={!!emailModalProposal}
           onClose={() => setEmailModalProposal(null)}
           onSend={handleSendEmail}

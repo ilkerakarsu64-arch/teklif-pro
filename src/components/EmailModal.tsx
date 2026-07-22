@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Proposal } from '../types';
+import { Proposal, AppSettings } from '../types';
 import { formatCurrency } from '../utils/formatters';
-import { Mail, Send, X, CheckCircle2 } from 'lucide-react';
+import { openDefaultMailClient } from '../utils/mailClient';
+import { Mail, Send, X, CheckCircle2, ExternalLink } from 'lucide-react';
 
 interface EmailModalProps {
   proposal: Proposal;
+  settings?: AppSettings;
   isOpen: boolean;
   onClose: () => void;
   onSend: (toEmail: string, subject: string, customMessage: string) => Promise<any>;
@@ -12,6 +14,7 @@ interface EmailModalProps {
 
 export const EmailModal: React.FC<EmailModalProps> = ({
   proposal,
+  settings,
   isOpen,
   onClose,
   onSend
@@ -203,22 +206,36 @@ export const EmailModal: React.FC<EmailModalProps> = ({
             </div>
 
             {/* Footer Buttons */}
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-2 pt-3 border-t border-slate-200">
               <button
                 type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-sm text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200"
+                onClick={() => {
+                  openDefaultMailClient(proposal, settings, toEmail, customMessage);
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-sm bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 border border-amber-400 shadow-xs transition-colors"
+                title="Bilgisayarınızda yüklü varsayılan e-posta programını (Outlook, Windows Mail, Thunderbird) çalıştırır ve teklif metnini düzenli olarak doldurur"
               >
-                İptal
+                <ExternalLink className="w-4 h-4" />
+                <span>Mail Programı ile Aç (Outlook / PC)</span>
               </button>
-              <button
-                type="submit"
-                disabled={isSending}
-                className="px-5 py-2 rounded-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs border border-blue-500 flex items-center gap-2 shadow-xs"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>{isSending ? 'Gönderiliyor...' : 'E-Postayı Gönder'}</span>
-              </button>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-sm text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSending}
+                  className="px-5 py-2 rounded-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs border border-blue-500 flex items-center gap-2 shadow-xs"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isSending ? 'Gönderiliyor...' : 'Sunucudan Gönder (SMTP)'}</span>
+                </button>
+              </div>
             </div>
 
           </form>
