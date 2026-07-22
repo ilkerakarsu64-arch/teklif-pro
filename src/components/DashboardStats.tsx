@@ -161,7 +161,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* ------------------------------------------------------------- */}
       {/* Top Executive Header Banner                                   */}
       {/* ------------------------------------------------------------- */}
-      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white rounded-2xl p-6 sm:p-8 border border-blue-500 shadow-xl relative overflow-hidden">
         {/* Subtle Background Glow Accent */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-10 w-72 h-72 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />

@@ -148,10 +148,10 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-4 font-mono">
+      <div className="min-h-screen bg-slate-100 text-slate-900 flex items-center justify-center p-4 font-mono">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent animate-spin mx-auto rounded-sm" />
-          <p className="text-xs text-slate-400 uppercase tracking-widest">Müşteri Teklif Portalı Yükleniyor...</p>
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent animate-spin mx-auto rounded-sm" />
+          <p className="text-xs text-slate-600 font-bold uppercase tracking-widest">Müşteri Teklif Portalı Yükleniyor...</p>
         </div>
       </div>
     );
@@ -159,11 +159,11 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
 
   if (error || !proposal) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-4 font-mono">
-        <div className="max-w-md bg-slate-800 p-6 rounded-sm border border-slate-700 text-center space-y-3">
+      <div className="min-h-screen bg-slate-100 text-slate-900 flex items-center justify-center p-4 font-mono">
+        <div className="max-w-md bg-white p-6 rounded-2xl border border-slate-200 shadow-xl text-center space-y-3">
           <XCircle className="w-12 h-12 text-rose-500 mx-auto" />
-          <h2 className="text-base font-bold uppercase tracking-wider">Bağlantı Geçersiz</h2>
-          <p className="text-xs text-slate-400">{error || 'İstenen teklif sistemde bulunamadı.'}</p>
+          <h2 className="text-base font-bold uppercase tracking-wider text-slate-900">Bağlantı Geçersiz</h2>
+          <p className="text-xs text-slate-600">{error || 'İstenen teklif sistemde bulunamadı.'}</p>
         </div>
       </div>
     );
