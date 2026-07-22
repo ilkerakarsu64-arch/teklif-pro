@@ -651,6 +651,10 @@ function AppContent() {
               handleDeleteProposal(id);
               setSelectedProposalId(null);
             }}
+            onCreateInvoice={(prop) => {
+              setSelectedProposalId(null);
+              setActiveTab('invoices');
+            }}
             currentUser={user}
           />
         ) : activeTab === 'dashboard' ? (

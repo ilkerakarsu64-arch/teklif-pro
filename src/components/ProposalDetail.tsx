@@ -19,7 +19,8 @@ import {
   Zap,
   Trash2,
   Download,
-  ExternalLink
+  ExternalLink,
+  Receipt
 } from 'lucide-react';
 import { downloadProposalPdf, createAndSaveVectorPdf } from '../utils/pdfDownloader';
 
@@ -31,6 +32,7 @@ interface ProposalDetailProps {
   onSendEmail: () => void;
   onOpenCustomerSimulator: () => void;
   onDeleteProposal?: (id: string) => void;
+  onCreateInvoice?: (proposal: Proposal) => void;
   currentUser: User | null;
 }
 
@@ -42,6 +44,7 @@ export const ProposalDetail: React.FC<ProposalDetailProps> = ({
   onSendEmail,
   onOpenCustomerSimulator,
   onDeleteProposal,
+  onCreateInvoice,
   currentUser
 }) => {
   const permissions = currentUser ? getUserPermissions(currentUser.role) : getUserPermissions('ADMIN');
@@ -261,6 +264,17 @@ export const ProposalDetail: React.FC<ProposalDetailProps> = ({
             {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
             <span>{copied ? 'Link Kopyalandı!' : 'Link Kopyala'}</span>
           </button>
+
+          {proposal.status === 'ONAYLANDI' && onCreateInvoice && (
+            <button
+              onClick={() => onCreateInvoice(proposal)}
+              className="px-3.5 py-2 rounded-sm bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors border border-emerald-500 cursor-pointer active:scale-95"
+              title="Bu onaylı teklif için fatura oluştur ve kayıt gir"
+            >
+              <Receipt className="w-4 h-4 text-white" />
+              <span>📄 Fatura Kes / Bilgi Gir</span>
+            </button>
+          )}
 
           <button
             onClick={onSendEmail}
