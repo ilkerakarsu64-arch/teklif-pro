@@ -1,12 +1,39 @@
-import sqlite3 from "sqlite3";
-import { open, Database } from "sqlite";
+import Database from 'better-sqlite3';
 import path from "path";
 import bcrypt from "bcrypt";
 import { Customer, Proposal, AppNotification, EmailLog, AppSettings, User, Invoice } from "./types";
 import { initialCustomers, initialProposals, initialNotifications } from "./data/mockData";
 import { DEFAULT_USERS } from "./utils/auth";
 
-let db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
+class AsyncDatabase {
+  private db: InstanceType<typeof Database>;
+
+  constructor(filename: string) {
+    this.db = new Database(filename) as InstanceType<typeof Database>;
+  }
+
+  async run(sql: string, ...params: any[]): Promise<any> {
+    return this.db.prepare(sql).run(...params);
+  }
+
+  async get<T = any>(sql: string, ...params: any[]): Promise<T | undefined> {
+    return this.db.prepare(sql).get(...params) as T | undefined;
+  }
+
+  async all<T = any>(sql: string, ...params: any[]): Promise<T[]> {
+    return this.db.prepare(sql).all(...params) as T[];
+  }
+
+  async exec(sql: string): Promise<void> {
+    this.db.exec(sql);
+  }
+
+  async close(): Promise<void> {
+    this.db.close();
+  }
+}
+
+let db: AsyncDatabase | null = null;
 const dbPath = path.join(process.cwd(), "teklif.db");
 
 const BCRYPT_ROUNDS = 12;
@@ -16,13 +43,8 @@ const ACCESS_TOKEN_TTL = 15 * 60 * 1000; // 15 minutes
 export async function getDb() {
   if (db) return db;
 
-  db = await open({
-    filename: dbPath,
-    driver: sqlite3.Database,
-  });
-
-  // Enable foreign keys
-  await db.run("PRAGMA foreign_keys = ON");
+  db = new AsyncDatabase(dbPath);
+  await db.exec("PRAGMA foreign_keys = ON");
 
   await initializeDatabase();
   return db;
