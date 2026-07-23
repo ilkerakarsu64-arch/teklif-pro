@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Proposal, ProposalDevice, DeviceItem, ProposalItem, Customer, AppSettings } from '../types';
 import { formatCurrency } from '../utils/formatters';
 import { 
@@ -22,8 +22,79 @@ import {
   ShieldCheck,
   FileEdit,
   User,
-  Clock
+  Clock,
+  Bookmark,
+  Copy,
+  Check,
+  RotateCcw,
+  FileCheck
 } from 'lucide-react';
+
+const STANDARD_DEVICE_NOTE_TEMPLATES = [
+  {
+    id: 'garanti-1yil',
+    title: '🛡️ 1 Yıl Parça Garantisi & Bakım',
+    badge: '1 Yıl Garanti',
+    text: 'Cihazın değişen tüm yedek parçaları 1 (bir) yıl garantilidir. Kurulum sonrası ilk 3 ay ücretsiz periyodik kontrol dahildir.'
+  },
+  {
+    id: 'hizli-teslimat',
+    title: '⚡ 2 İş Gününde Teslimat',
+    badge: '2 İş Günü Teslim',
+    text: 'Cihazın arıza tespiti tamamlanmış olup onay durumuna müteakip 2 (iki) iş günü içerisinde test edilerek teslim edilecektir.'
+  },
+  {
+    id: 'orijinal-parca',
+    title: '📦 %100 Orijinal Parça Garantisi',
+    badge: 'Orijinal Parça',
+    text: 'Onarım sürecinde %100 orijinal ve üretici onaylı yedek parçalar kullanılmıştır. 6 ay birebir değişim garantilidir.'
+  },
+  {
+    id: 'bakim-yazilim',
+    title: '💻 Donanım Bakımı & Güncelleme',
+    badge: 'Donanım & Yazılım Bakım',
+    text: 'Cihaz donanım temizliği, termal macun yenilemesi ve güncel yazılım kurulumları başarıyla yapılmıştır.'
+  },
+  {
+    id: 'anakart-ekran',
+    title: '⚙️ Anakart / Ekran Değişim Şartı',
+    badge: 'Anakart & Ekran Şartı',
+    text: 'Arızalı anakart ve ekran grubu yenilenmiştir. Sıvı teması veya darbe kaynaklı arızalar garanti haricidir.'
+  }
+];
+
+const STANDARD_PAYMENT_TERMS_TEMPLATES = [
+  {
+    id: 'pay-50-50',
+    title: '💳 %50 Peşin, %50 Teslimatta',
+    badge: '%50 Peşin / %50 Teslimat',
+    text: '%50 Peşin Siparişte, %50 Teslimat ve Onay Sonrasında Havale/EFT ile ödenecektir.'
+  },
+  {
+    id: 'pay-100-pesin',
+    title: '💰 %100 Peşin Ödeme',
+    badge: '%100 Peşin',
+    text: '%100 Peşin Ödemelerde fiyatlarımız geçerlidir. Faturaya müteakip 3 iş günü içinde ödenmelidir.'
+  },
+  {
+    id: 'pay-30-vade',
+    title: '📅 30 Gün Vadeli Ödeme',
+    badge: '30 Gün Vade',
+    text: 'Teslimat ve fatura tarihinden itibaren 30 (otuz) gün vadeli Havale/EFT ile ödenir.'
+  },
+  {
+    id: 'pay-3-taksit',
+    title: '💳 3 Eşit Taksit',
+    badge: '3 Taksit',
+    text: '%33 Peşin, kalan tutar 30 ve 60 günlük vadelerle 3 eşit taksitte ödenecektir.'
+  },
+  {
+    id: 'pay-aylik-hizmet',
+    title: '📋 Aylık Periyodik Tahsilat',
+    badge: 'Aylık Tahsilat',
+    text: 'Hizmet bedeli her ayın ilk 5 iş günü içerisinde fatura karşılığı tahsil edilir.'
+  }
+];
 
 interface ProposalFormProps {
   initialProposal?: Proposal | null;
@@ -162,6 +233,168 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
     const updated = [...devices];
     updated[deviceIndex] = { ...updated[deviceIndex], [field]: value };
     setDevices(updated);
+  };
+
+  // Device Note Templates State & Functions
+  const [customNoteTemplates, setCustomNoteTemplates] = useState<Array<{ id: string; title: string; badge?: string; text: string }>>(() => {
+    try {
+      const saved = localStorage.getItem('teklifpro_custom_device_note_templates');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [deletedStandardTemplateIds, setDeletedStandardTemplateIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('teklifpro_deleted_standard_note_templates');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [templateToastMsg, setTemplateToastMsg] = useState<{ devIdx: number; message: string } | null>(null);
+
+  const activeStandardTemplates = useMemo(() => {
+    return STANDARD_DEVICE_NOTE_TEMPLATES.filter(t => !deletedStandardTemplateIds.includes(t.id));
+  }, [deletedStandardTemplateIds]);
+
+  const handleApplyDeviceTemplate = (devIdx: number, templateText: string, mode: 'append' | 'replace') => {
+    const updated = [...devices];
+    const currentNote = updated[devIdx]?.deviceNote || '';
+    
+    if (mode === 'append' && currentNote.trim()) {
+      updated[devIdx].deviceNote = `${currentNote.trim()}\n• ${templateText.trim()}`;
+    } else {
+      updated[devIdx].deviceNote = templateText.trim();
+    }
+    setDevices(updated);
+
+    setTemplateToastMsg({ 
+      devIdx, 
+      message: mode === 'append' ? 'Şablon nota eklendi!' : 'Şablon nota uygulandı!' 
+    });
+    setTimeout(() => setTemplateToastMsg(null), 2500);
+  };
+
+  const handleSaveCustomDeviceTemplate = (devIdx: number) => {
+    const currentText = devices[devIdx]?.deviceNote || '';
+    if (!currentText.trim()) return;
+
+    const shortTitle = currentText.trim().slice(0, 30) + (currentText.trim().length > 30 ? '...' : '');
+    const newTemplate = {
+      id: `custom-${Date.now()}`,
+      title: `⭐ ${shortTitle}`,
+      badge: 'Özel Şablon',
+      text: currentText.trim()
+    };
+
+    const updatedTemplates = [newTemplate, ...customNoteTemplates];
+    setCustomNoteTemplates(updatedTemplates);
+    localStorage.setItem('teklifpro_custom_device_note_templates', JSON.stringify(updatedTemplates));
+
+    setTemplateToastMsg({ devIdx, message: 'Notunuz özel şablonlarınıza kaydedildi!' });
+    setTimeout(() => setTemplateToastMsg(null), 3000);
+  };
+
+  const handleDeleteTemplate = (templateId: string, isStandard: boolean, devIdx: number) => {
+    if (isStandard) {
+      const updated = [...deletedStandardTemplateIds, templateId];
+      setDeletedStandardTemplateIds(updated);
+      localStorage.setItem('teklifpro_deleted_standard_note_templates', JSON.stringify(updated));
+    } else {
+      const updatedCustom = customNoteTemplates.filter(t => t.id !== templateId);
+      setCustomNoteTemplates(updatedCustom);
+      localStorage.setItem('teklifpro_custom_device_note_templates', JSON.stringify(updatedCustom));
+    }
+
+    setTemplateToastMsg({ devIdx, message: 'Şablon listeden silindi.' });
+    setTimeout(() => setTemplateToastMsg(null), 2500);
+  };
+
+  const handleResetStandardTemplates = (devIdx: number) => {
+    setDeletedStandardTemplateIds([]);
+    localStorage.removeItem('teklifpro_deleted_standard_note_templates');
+    setTemplateToastMsg({ devIdx, message: 'Silinen tüm varsayılan şablonlar geri getirildi!' });
+    setTimeout(() => setTemplateToastMsg(null), 3000);
+  };
+
+  // Payment Terms Templates State & Functions
+  const [customPaymentTemplates, setCustomPaymentTemplates] = useState<Array<{ id: string; title: string; badge?: string; text: string }>>(() => {
+    try {
+      const saved = localStorage.getItem('teklifpro_custom_payment_templates');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [deletedStandardPaymentIds, setDeletedStandardPaymentIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('teklifpro_deleted_standard_payment_templates');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [paymentToastMsg, setPaymentToastMsg] = useState<string | null>(null);
+
+  const activeStandardPaymentTemplates = useMemo(() => {
+    return STANDARD_PAYMENT_TERMS_TEMPLATES.filter(t => !deletedStandardPaymentIds.includes(t.id));
+  }, [deletedStandardPaymentIds]);
+
+  const handleApplyPaymentTemplate = (templateText: string, mode: 'append' | 'replace') => {
+    if (mode === 'append' && paymentTerms.trim()) {
+      setPaymentTerms(`${paymentTerms.trim()}\n• ${templateText.trim()}`);
+    } else {
+      setPaymentTerms(templateText.trim());
+    }
+
+    setPaymentToastMsg(mode === 'append' ? 'Ödeme şablonu eklendi!' : 'Ödeme koşulu güncellendi!');
+    setTimeout(() => setPaymentToastMsg(null), 2500);
+  };
+
+  const handleSaveCustomPaymentTemplate = () => {
+    if (!paymentTerms.trim()) return;
+
+    const shortTitle = paymentTerms.trim().slice(0, 30) + (paymentTerms.trim().length > 30 ? '...' : '');
+    const newTemplate = {
+      id: `custom-pay-${Date.now()}`,
+      title: `⭐ ${shortTitle}`,
+      badge: 'Özel Ödeme',
+      text: paymentTerms.trim()
+    };
+
+    const updated = [newTemplate, ...customPaymentTemplates];
+    setCustomPaymentTemplates(updated);
+    localStorage.setItem('teklifpro_custom_payment_templates', JSON.stringify(updated));
+
+    setPaymentToastMsg('Ödeme koşulunuz özel şablonlarınıza kaydedildi!');
+    setTimeout(() => setPaymentToastMsg(null), 3000);
+  };
+
+  const handleDeletePaymentTemplate = (templateId: string, isStandard: boolean) => {
+    if (isStandard) {
+      const updated = [...deletedStandardPaymentIds, templateId];
+      setDeletedStandardPaymentIds(updated);
+      localStorage.setItem('teklifpro_deleted_standard_payment_templates', JSON.stringify(updated));
+    } else {
+      const updatedCustom = customPaymentTemplates.filter(t => t.id !== templateId);
+      setCustomPaymentTemplates(updatedCustom);
+      localStorage.setItem('teklifpro_custom_payment_templates', JSON.stringify(updatedCustom));
+    }
+
+    setPaymentToastMsg('Ödeme şablonu silindi.');
+    setTimeout(() => setPaymentToastMsg(null), 2500);
+  };
+
+  const handleResetStandardPaymentTemplates = () => {
+    setDeletedStandardPaymentIds([]);
+    localStorage.removeItem('teklifpro_deleted_standard_payment_templates');
+    setPaymentToastMsg('Silinen tüm varsayılan ödeme şablonları geri getirildi!');
+    setTimeout(() => setPaymentToastMsg(null), 3000);
   };
 
   const addDeviceItem = (deviceIndex: number) => {
@@ -612,19 +845,175 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
                 </div>
               </div>
 
-              {/* Device Proposal Note Section */}
-              <div className="pt-3 border-t border-slate-200">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700 block mb-1.5 flex items-center gap-1.5">
-                  <FileEdit className="w-3.5 h-3.5 text-amber-600" />
-                  <span>CİHAZ TEKLİF NOTU (Bu cihaza özel açıklama)</span>
-                </label>
+              {/* Device Proposal Note Section with Template Feature */}
+              <div className="pt-3.5 border-t border-slate-200 space-y-2.5">
+                
+                {/* Section Header & Main Template Controls */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <FileEdit className="w-3.5 h-3.5 text-amber-600" />
+                    <span>CİHAZ TEKLİF NOTU (Bu cihaza özel açıklama)</span>
+                  </label>
+
+                  {/* Template Action Controls */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    
+                    {/* Template Dropdown Menu */}
+                    <select
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (!val) return;
+                        if (val === '__DEFAULT_SETTINGS__') {
+                          const defNote = settings?.proposalDefaults.deviceDefaultNote || 'Cihaz yedek parçaları 1 yıl garantilidir. Teslim süresi 3 iş günüdür.';
+                          handleApplyDeviceTemplate(devIdx, defNote, 'replace');
+                        } else {
+                          const allTemplates = [...STANDARD_DEVICE_NOTE_TEMPLATES, ...customNoteTemplates];
+                          const found = allTemplates.find(t => t.id === val);
+                          if (found) {
+                            handleApplyDeviceTemplate(devIdx, found.text, 'append');
+                          }
+                        }
+                        e.target.value = '';
+                      }}
+                      className="p-1.5 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 border border-amber-300 dark:border-amber-700 text-amber-950 dark:text-amber-200 font-bold rounded-lg text-[11px] cursor-pointer focus:outline-none shadow-2xs"
+                    >
+                      <option value="">📋 Şablon Seç & Ekle...</option>
+                      {settings?.proposalDefaults.deviceDefaultNote && (
+                        <option value="__DEFAULT_SETTINGS__">⚙️ Ayarlardaki Varsayılan Notu Yükle</option>
+                      )}
+                      {activeStandardTemplates.length > 0 && (
+                        <optgroup label="Hazır Standart Şablonlar">
+                          {activeStandardTemplates.map(t => (
+                            <option key={t.id} value={t.id}>{t.title}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {customNoteTemplates.length > 0 && (
+                        <optgroup label="Kayıtlı Özel Şablonlarınız">
+                          {customNoteTemplates.map(t => (
+                            <option key={t.id} value={t.id}>{t.title}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                    </select>
+
+                    {/* Save Current Text as Custom Template */}
+                    {device.deviceNote && device.deviceNote.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => handleSaveCustomDeviceTemplate(devIdx)}
+                        className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                        title="Yazdığınız bu notu gelecek tekliflerde tekrar kullanmak için şablon olarak kaydet"
+                      >
+                        <Bookmark className="w-3 h-3 text-indigo-600" />
+                        <span>Şablon Olarak Kaydet</span>
+                      </button>
+                    )}
+
+                    {/* Clear Button */}
+                    {device.deviceNote && (
+                      <button
+                        type="button"
+                        onClick={() => updateDeviceField(devIdx, 'deviceNote', '')}
+                        className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
+                        title="Notu Temizle"
+                      >
+                        Temizle
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick One-Click Template Pills with Delete Actions */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    Hızlı Şablonlar:
+                  </span>
+                  
+                  {/* Standard Active Pills with Delete Buttons */}
+                  {activeStandardTemplates.map((tpl) => (
+                    <div key={tpl.id} className="inline-flex items-center group/pill shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={() => handleApplyDeviceTemplate(devIdx, tpl.text, 'append')}
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 border border-slate-200 hover:border-amber-300 rounded-l-md text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1"
+                        title={`Tıkla ve Ekle: "${tpl.text}"`}
+                      >
+                        <Plus className="w-3 h-3 text-amber-600" />
+                        <span>{tpl.badge || tpl.title}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTemplate(tpl.id, true, devIdx);
+                        }}
+                        className="px-1.5 py-1 bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-600 border border-l-0 border-slate-200 hover:border-rose-300 rounded-r-md text-[11px] font-bold cursor-pointer transition-colors"
+                        title="Bu şablonu hızlı listeden sil"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Saved Custom Pills with Delete Buttons */}
+                  {customNoteTemplates.map((tpl) => (
+                    <div key={tpl.id} className="inline-flex items-center group/pill shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={() => handleApplyDeviceTemplate(devIdx, tpl.text, 'append')}
+                        className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-l-md text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1"
+                        title={`Tıkla ve Ekle: "${tpl.text}"`}
+                      >
+                        <Plus className="w-3 h-3 text-indigo-600" />
+                        <span className="truncate max-w-[130px]">{tpl.title}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTemplate(tpl.id, false, devIdx);
+                        }}
+                        className="px-1.5 py-1 bg-indigo-50 hover:bg-rose-100 text-indigo-400 hover:text-rose-600 border border-l-0 border-indigo-200 hover:border-rose-300 rounded-r-md text-[11px] font-bold cursor-pointer transition-colors"
+                        title="Bu özel şablonu kalıcı olarak sil"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Restore Standard Templates Button (if any standard template was deleted) */}
+                  {deletedStandardTemplateIds.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleResetStandardTemplates(devIdx)}
+                      className="px-2 py-1 bg-slate-100 hover:bg-blue-100 text-slate-500 hover:text-blue-700 border border-dashed border-slate-300 rounded-md text-[10px] font-bold cursor-pointer transition-colors flex items-center gap-1"
+                      title="Silinen varsayılan şablonları tekrar yükle"
+                    >
+                      <RotateCcw className="w-2.5 h-2.5" />
+                      <span>Varsayılanları Geri Getir ({deletedStandardTemplateIds.length})</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Feedback Toast Notification */}
+                {templateToastMsg && templateToastMsg.devIdx === devIdx && (
+                  <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-[11px] font-bold flex items-center gap-1.5 animate-in fade-in duration-150">
+                    <FileCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>{templateToastMsg.message}</span>
+                  </div>
+                )}
+
+                {/* Textarea Input */}
                 <textarea
                   rows={2}
                   value={device.deviceNote || ''}
                   onChange={(e) => updateDeviceField(devIdx, 'deviceNote', e.target.value)}
-                  placeholder="Örn: Cihaz yedek parçaları 1 yıl garantilidir. Teslim süresi 3 iş günüdür."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white"
+                  placeholder="Örn: Cihaz yedek parçaları 1 yıl garantilidir. Teslim süresi 3 iş günüdür. (Yukarıdaki hızlı şablonlara tıklayarak tek tıkla ekleyebilirsiniz)"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition-colors"
                 />
+
               </div>
 
               {/* Device Total Section (Cihaz Genel Toplamı) */}
@@ -682,19 +1071,175 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
 
       </div>
 
-      {/* Payment Terms Section */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-2">
-        <label className="text-xs font-bold uppercase tracking-wider text-slate-800 block flex items-center gap-2">
-          <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-md border border-emerald-100">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+      {/* Payment Terms Section with Template Feature */}
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-3">
+        
+        {/* Header & Main Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+            <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-md border border-emerald-100">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            </div>
+            <span>Ödeme Koşulları & Şartlar</span>
+          </label>
+
+          {/* Action Controls */}
+          <div className="flex flex-wrap items-center gap-2">
+            
+            {/* Template Dropdown Selector */}
+            <select
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!val) return;
+                if (val === '__DEFAULT_SETTINGS__') {
+                  const defNote = settings?.proposalDefaults.paymentTerms || '%50 Peşin Siparişte, %50 Teslimat ve Onay Sonrasında';
+                  handleApplyPaymentTemplate(defNote, 'replace');
+                } else {
+                  const allTemplates = [...STANDARD_PAYMENT_TERMS_TEMPLATES, ...customPaymentTemplates];
+                  const found = allTemplates.find(t => t.id === val);
+                  if (found) {
+                    handleApplyPaymentTemplate(found.text, 'append');
+                  }
+                }
+                e.target.value = '';
+              }}
+              className="p-1.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 border border-emerald-300 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200 font-bold rounded-lg text-[11px] cursor-pointer focus:outline-none shadow-2xs"
+            >
+              <option value="">📋 Ödeme Şablonu Seç & Ekle...</option>
+              {settings?.proposalDefaults.paymentTerms && (
+                <option value="__DEFAULT_SETTINGS__">⚙️ Ayarlardaki Varsayılan Koşulu Yükle</option>
+              )}
+              {activeStandardPaymentTemplates.length > 0 && (
+                <optgroup label="Hazır Ödeme Şablonları">
+                  {activeStandardPaymentTemplates.map(t => (
+                    <option key={t.id} value={t.id}>{t.title}</option>
+                  ))}
+                </optgroup>
+              )}
+              {customPaymentTemplates.length > 0 && (
+                <optgroup label="Kayıtlı Özel Ödeme Şablonlarınız">
+                  {customPaymentTemplates.map(t => (
+                    <option key={t.id} value={t.id}>{t.title}</option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+
+            {/* Save Current Text as Custom Template */}
+            {paymentTerms && paymentTerms.trim() && (
+              <button
+                type="button"
+                onClick={handleSaveCustomPaymentTemplate}
+                className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                title="Yazdığınız bu ödeme şartını gelecek tekliflerde tekrar kullanmak için şablon olarak kaydet"
+              >
+                <Bookmark className="w-3 h-3 text-indigo-600" />
+                <span>Şablon Olarak Kaydet</span>
+              </button>
+            )}
+
+            {/* Clear Button */}
+            {paymentTerms && (
+              <button
+                type="button"
+                onClick={() => setPaymentTerms('')}
+                className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
+                title="İçeriği Temizle"
+              >
+                Temizle
+              </button>
+            )}
           </div>
-          <span>Ödeme Koşulları & Şartlar</span>
-        </label>
+        </div>
+
+        {/* Quick One-Click Template Pills with Delete Actions */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-emerald-500" />
+            Hızlı Şablonlar:
+          </span>
+          
+          {/* Active Standard Payment Pills */}
+          {activeStandardPaymentTemplates.map((tpl) => (
+            <div key={tpl.id} className="inline-flex items-center group/pill shadow-2xs">
+              <button
+                type="button"
+                onClick={() => handleApplyPaymentTemplate(tpl.text, 'append')}
+                className="px-2.5 py-1 bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 border border-slate-200 hover:border-emerald-300 rounded-l-md text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1"
+                title={`Tıkla ve Ekle: "${tpl.text}"`}
+              >
+                <Plus className="w-3 h-3 text-emerald-600" />
+                <span>{tpl.badge || tpl.title}</span>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeletePaymentTemplate(tpl.id, true);
+                }}
+                className="px-1.5 py-1 bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-600 border border-l-0 border-slate-200 hover:border-rose-300 rounded-r-md text-[11px] font-bold cursor-pointer transition-colors"
+                title="Bu ödeme şablonunu listeden sil"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+
+          {/* Saved Custom Payment Pills */}
+          {customPaymentTemplates.map((tpl) => (
+            <div key={tpl.id} className="inline-flex items-center group/pill shadow-2xs">
+              <button
+                type="button"
+                onClick={() => handleApplyPaymentTemplate(tpl.text, 'append')}
+                className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-l-md text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1"
+                title={`Tıkla ve Ekle: "${tpl.text}"`}
+              >
+                <Plus className="w-3 h-3 text-indigo-600" />
+                <span className="truncate max-w-[130px]">{tpl.title}</span>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeletePaymentTemplate(tpl.id, false);
+                }}
+                className="px-1.5 py-1 bg-indigo-50 hover:bg-rose-100 text-indigo-400 hover:text-rose-600 border border-l-0 border-indigo-200 hover:border-rose-300 rounded-r-md text-[11px] font-bold cursor-pointer transition-colors"
+                title="Bu özel ödeme şablonunu sil"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+
+          {/* Restore Standard Payment Templates Button */}
+          {deletedStandardPaymentIds.length > 0 && (
+            <button
+              type="button"
+              onClick={handleResetStandardPaymentTemplates}
+              className="px-2 py-1 bg-slate-100 hover:bg-blue-100 text-slate-500 hover:text-blue-700 border border-dashed border-slate-300 rounded-md text-[10px] font-bold cursor-pointer transition-colors flex items-center gap-1"
+              title="Silinen varsayılan ödeme şablonlarını geri yükle"
+            >
+              <RotateCcw className="w-2.5 h-2.5" />
+              <span>Silinenleri Geri Getir ({deletedStandardPaymentIds.length})</span>
+            </button>
+          )}
+        </div>
+
+        {/* Feedback Toast Notification */}
+        {paymentToastMsg && (
+          <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-[11px] font-bold flex items-center gap-1.5 animate-in fade-in duration-150">
+            <FileCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span>{paymentToastMsg}</span>
+          </div>
+        )}
+
+        {/* Textarea Input */}
         <textarea
           rows={3}
           value={paymentTerms}
           onChange={(e) => setPaymentTerms(e.target.value)}
-          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 leading-relaxed font-mono focus:outline-none focus:border-blue-600 focus:bg-white"
+          placeholder="Örn: %50 Peşin Siparişte, %50 Teslimat ve Onay Sonrasında. (Yukarıdaki hızlı şablonlara tıklayarak tek tıkla ekleyebilirsiniz)"
+          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 leading-relaxed font-mono focus:outline-none focus:border-blue-600 focus:bg-white transition-colors"
         />
       </div>
 

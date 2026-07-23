@@ -22,7 +22,8 @@ import {
   Globe,
   Sliders,
   ShieldCheck,
-  Check
+  Check,
+  Zap
 } from 'lucide-react';
 
 interface SettingsProps {
@@ -32,8 +33,8 @@ interface SettingsProps {
   customers: Customer[];
   onResetData: () => Promise<void>;
   users: User[];
-  onAddUser: (userData: Partial<User>) => Promise<void>;
-  onUpdateUser: (id: string, userData: Partial<User>) => Promise<void>;
+  onAddUser: (userData: Partial<User>) => Promise<any>;
+  onUpdateUser: (id: string, userData: Partial<User>) => Promise<any>;
   onDeleteUser: (id: string) => Promise<void>;
   currentUser: User | null;
 }
@@ -302,7 +303,7 @@ export const Settings: React.FC<SettingsProps> = ({
         {/* Form Content Display Card */}
         <div className="lg:col-span-3 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm">
           
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-6">
             
             {/* 1. COMPANY & BANK DETAILS */}
             {activeSubTab === 'company' && (
@@ -397,35 +398,64 @@ export const Settings: React.FC<SettingsProps> = ({
                     />
                   </div>
 
-                  {/* Public URL Box */}
-                  <div className="sm:col-span-2 bg-gradient-to-r from-blue-50/90 to-indigo-50/70 dark:bg-blue-950/40 p-4 rounded-xl border border-blue-200 dark:border-blue-900 space-y-2">
-                    <label className="block font-bold text-blue-950 dark:text-blue-300 text-xs flex items-center gap-1.5">
-                      <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <span>İnternet Erişim Adresi (Public Web URL)</span>
-                    </label>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                      Müşterilere gönderilen e-postalardaki ve linklerdeki teklif bağlantılarının dış ağlardan erişilebilir olması için açık web adresi girin (Örn: <code className="bg-white dark:bg-slate-800 px-1 py-0.5 rounded font-mono font-bold text-blue-600">https://teklif-pro.onrender.com</code> veya localtunnel adresi).
+                  {/* Public Web Link System Settings */}
+                  <div className="sm:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50/80 dark:bg-blue-950/40 p-4.5 rounded-2xl border border-blue-200 dark:border-blue-800 space-y-3 shadow-2xs">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <label className="font-extrabold text-blue-950 dark:text-blue-300 text-xs flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-pulse" />
+                        <span>Çevrim İçi Müşteri Teklif Bağlantısı (Akıllı Web Link Sistemi)</span>
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const detected = window.location.origin;
+                          handleCompanyChange('publicUrl', detected);
+                        }}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] rounded-lg transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5 fill-white" />
+                        <span>Mevcut Alan Adını Otomatik Algıla</span>
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Müşterilerinizin teklifi internetten incelemesi için özel bir web adresi girebilir veya boş bırakabilirsiniz. <strong>Boş bırakıldığında sistem aktif alan adını otomatik kullanır.</strong>
                     </p>
-                    <input
-                      type="text"
-                      placeholder="https://funny-pigs-run.loca.lt"
-                      value={formData.company.publicUrl || ''}
-                      onChange={(e) => handleCompanyChange('publicUrl', e.target.value)}
-                      className="w-full p-2.5 bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-lg font-mono text-xs text-slate-900 dark:text-slate-100 font-bold focus:ring-2 focus:ring-blue-500/30 outline-none"
-                    />
-                    {formData.company.publicUrl && (
-                      <div className="mt-1 text-[11px] text-blue-700 dark:text-blue-300 font-mono font-semibold flex items-center gap-1.5 flex-wrap">
-                        <span>Canlı Bağlantı Formatı:</span>
-                        <a
-                          href={getPublicPortalUrl(proposals[0]?.id || 'ORNEK-TEKLIF-ID', { company: formData.company })}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="underline hover:text-blue-900 dark:hover:text-blue-200 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-blue-200 shadow-2xs"
+
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="https://sirketiniz.com (Boş bırakılırsa otomatik algılanır)"
+                        value={formData.company.publicUrl || ''}
+                        onChange={(e) => handleCompanyChange('publicUrl', e.target.value)}
+                        className="w-full p-2.5 bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-xl font-mono text-xs text-slate-900 dark:text-slate-100 font-bold focus:ring-2 focus:ring-blue-500/30 outline-none pr-20"
+                      />
+                      {formData.company.publicUrl && (
+                        <button
+                          type="button"
+                          onClick={() => handleCompanyChange('publicUrl', '')}
+                          className="absolute right-2 top-2 px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md text-[10px] font-bold cursor-pointer"
                         >
-                          {getPublicPortalUrl(proposals[0]?.id || 'ORNEK-TEKLIF-ID', { company: formData.company })}
-                        </a>
+                          Sıfırla
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-blue-200/80 dark:border-blue-900/80 text-[11px] space-y-1">
+                      <div className="text-slate-500 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Aktif Üretilen Çevrim İçi Kısa Teklif Bağlantısı Örneği:</span>
                       </div>
-                    )}
+                      <a
+                        href={getPublicPortalUrl(proposals[0]?.id || 'TKL-2026-1690', { company: formData.company })}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block font-mono font-black text-blue-600 dark:text-blue-400 underline hover:text-blue-800 break-all"
+                      >
+                        {getPublicPortalUrl(proposals[0]?.id || 'TKL-2026-1690', { company: formData.company })}
+                      </a>
+                    </div>
                   </div>
 
                   <div>
@@ -973,7 +1003,7 @@ export const Settings: React.FC<SettingsProps> = ({
               </div>
             )}
 
-          </form>
+          </div>
 
         </div>
 

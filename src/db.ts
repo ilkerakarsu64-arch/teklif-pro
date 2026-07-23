@@ -620,11 +620,21 @@ export async function getUserById(id: string): Promise<User | null> {
 
 export async function insertUser(u: User): Promise<void> {
   const d = await getDb();
-  const passwordHash = await bcrypt.hash(u.password || '123456', BCRYPT_ROUNDS);
+  const rawPass = (u.password || '123456').trim();
+  const passwordHash = rawPass.startsWith('$2b$') ? rawPass : await bcrypt.hash(rawPass, BCRYPT_ROUNDS);
+  
   await d.run(
     `INSERT INTO users (id, username, name, email, role, password, avatarUrl, isActive, createdAt)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    u.id, u.username, u.name, u.email, u.role, passwordHash, u.avatarUrl || null, u.isActive ? 1 : 0, u.createdAt
+    u.id, 
+    u.username.trim(), 
+    u.name.trim(), 
+    u.email.trim(), 
+    u.role, 
+    passwordHash, 
+    u.avatarUrl || null, 
+    u.isActive ? 1 : 0, 
+    u.createdAt || new Date().toISOString()
   );
 }
 
@@ -632,14 +642,22 @@ export async function updateUser(id: string, u: Partial<User>): Promise<void> {
   const d = await getDb();
   const current = await getUserById(id);
   if (!current) return;
-  const updated = { ...current, ...u };
-  let passwordHash = updated.password;
-  if (u.password && u.password !== current.password) {
-    passwordHash = await bcrypt.hash(u.password, BCRYPT_ROUNDS);
+
+  const username = (u.username !== undefined ? u.username : current.username).trim();
+  const name = (u.name !== undefined ? u.name : current.name).trim();
+  const email = (u.email !== undefined ? u.email : current.email).trim();
+  const role = u.role !== undefined ? u.role : current.role;
+  const isActive = u.isActive !== undefined ? u.isActive : current.isActive;
+  const avatarUrl = u.avatarUrl !== undefined ? u.avatarUrl : current.avatarUrl;
+
+  let passwordHash = current.password;
+  if (u.password && u.password.trim() && !u.password.startsWith('$2b$')) {
+    passwordHash = await bcrypt.hash(u.password.trim(), BCRYPT_ROUNDS);
   }
+
   await d.run(
     `UPDATE users SET username = ?, name = ?, email = ?, role = ?, password = ?, avatarUrl = ?, isActive = ? WHERE id = ?`,
-    updated.username, updated.name, updated.email, updated.role, passwordHash, updated.avatarUrl || null, updated.isActive ? 1 : 0, id
+    username, name, email, role, passwordHash, avatarUrl || null, isActive ? 1 : 0, id
   );
 }
 

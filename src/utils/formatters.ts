@@ -194,25 +194,25 @@ export function copyToClipboard(text: string): boolean {
 }
 
 export function getPublicPortalUrl(proposalId: string, settings?: any): string {
-  const publicUrl = settings?.company?.publicUrl;
-  if (publicUrl && typeof publicUrl === 'string' && publicUrl.trim()) {
-    let clean = publicUrl.trim();
-    // Strip trailing hashes, customer paths or slashes if user copy-pasted full proposal URL
-    clean = clean.split('#')[0].split('/customer/')[0].replace(/\/+$/, '');
-    
-    // Add protocol if user omitted https:// or http://
+  let baseUrl = '';
+
+  const customUrl = settings?.company?.publicUrl;
+  if (customUrl && typeof customUrl === 'string' && customUrl.trim()) {
+    let clean = customUrl.trim();
+    // Strip hash, query params, trailing slashes or subpaths
+    clean = clean.split('#')[0].split('?')[0].split('/customer/')[0].split('/portal/')[0].split('/p/')[0].replace(/\/+$/, '');
     if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
       clean = `https://${clean}`;
     }
-    
-    return `${clean}/#/customer/teklif/${proposalId}`;
-  }
-
-  if (typeof window !== 'undefined' && window.location) {
+    baseUrl = clean;
+  } else if (typeof window !== 'undefined' && window.location) {
     const origin = window.location.origin;
     const pathname = window.location.pathname.replace(/\/+$/, '');
-    return `${origin}${pathname}/#/customer/teklif/${proposalId}`;
+    baseUrl = `${origin}${pathname}`;
+  } else {
+    baseUrl = 'http://localhost:5173';
   }
 
-  return `http://localhost:3000/#/customer/teklif/${proposalId}`;
+  // Short & clean public web portal link: /#/p/TKL-2026-1690
+  return `${baseUrl}/#/p/${proposalId}`;
 }

@@ -14,7 +14,9 @@ import { CustomerList } from './components/CustomerList';
 import { Settings } from './components/Settings';
 import { DetailedReports } from './components/DetailedReports';
 import { InvoiceList } from './components/InvoiceList';
+import { LiveTracking } from './components/LiveTracking';
 import { AuthProvider, useAuth } from './hooks/useAuth';
+import { DEFAULT_USERS } from './utils/auth';
 import { playNotificationSound, formatCurrency } from './utils/formatters';
 import { Bell, Sparkles, CheckCircle2, XCircle, Eye, Users, Plus, Mail, Building2, Phone, MapPin } from 'lucide-react';
 
@@ -24,10 +26,21 @@ function getCustomerPortalId(): string | null {
   const search = window.location.search;
 
   let rawId: string | null = null;
-  if (hash.includes('/customer/teklif/')) {
+  if (hash.includes('/p/')) {
+    rawId = hash.split('/p/')[1];
+  } else if (path.includes('/p/')) {
+    rawId = path.split('/p/')[1];
+  } else if (hash.includes('/portal/')) {
+    rawId = hash.split('/portal/')[1];
+  } else if (path.includes('/portal/')) {
+    rawId = path.split('/portal/')[1];
+  } else if (hash.includes('/customer/teklif/')) {
     rawId = hash.split('/customer/teklif/')[1];
   } else if (path.includes('/customer/teklif/')) {
     rawId = path.split('/customer/teklif/')[1];
+  } else if (search.includes('p=')) {
+    const params = new URLSearchParams(search);
+    rawId = params.get('p');
   } else if (search.includes('proposalId=')) {
     const params = new URLSearchParams(search);
     rawId = params.get('proposalId');
@@ -92,7 +105,7 @@ function AppContent() {
   const { user, isAuthenticated, isLoading, login, logout, updateUser, setSession } = useAuth();
 
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'proposals' | 'invoices' | 'customers' | 'reports' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'proposals' | 'livetracking' | 'invoices' | 'customers' | 'reports' | 'settings'>('dashboard');
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -116,56 +129,124 @@ function AppContent() {
       const res = await fetch('/api/users');
       if (res.ok) {
         const data = await res.json();
-        setUsers(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setUsers(data);
+          localStorage.setItem('teklifpro_cached_users', JSON.stringify(data));
+          return;
+        }
       }
     } catch (err) {
       console.error('Users fetch error:', err);
     }
+
+    // Fallback: load cached users or DEFAULT_USERS
+    try {
+      const cached = localStorage.getItem('teklifpro_cached_users');
+      if (cached) {
+        setUsers(JSON.parse(cached));
+      } else {
+        setUsers(DEFAULT_USERS);
+      }
+    } catch {
+      setUsers(DEFAULT_USERS);
+    }
   };
 
   const handleAddUser = async (userData: Partial<User>) => {
+    const cleanUsername = (userData.username || '').trim();
+    const cleanName = (userData.name || '').trim();
+    const cleanEmail = (userData.email || '').trim();
+    const rawPass = (userData.password || '123456').trim();
+
+    const tempUser: User = {
+      id: `usr-${Date.now()}`,
+      username: cleanUsername,
+      name: cleanName,
+      email: cleanEmail,
+      role: userData.role || 'SALES',
+      password: rawPass,
+      isActive: userData.isActive !== undefined ? userData.isActive : true,
+      createdAt: new Date().toISOString()
+    };
+
+    // Optimistically update React State & Local Cache instantly!
+    setUsers(prev => {
+      const updated = [...prev.filter(u => u.username.toLowerCase() !== tempUser.username.toLowerCase()), tempUser];
+      localStorage.setItem('teklifpro_cached_users', JSON.stringify(updated));
+      return updated;
+    });
+
     try {
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
+      const data = await res.json();
       if (res.ok) {
-        await loadUsers();
+        setUsers(prev => {
+          const updated = [...prev.filter(u => u.id !== tempUser.id && u.username.toLowerCase() !== data.username.toLowerCase()), data];
+          localStorage.setItem('teklifpro_cached_users', JSON.stringify(updated));
+          return updated;
+        });
+        return { success: true, user: data };
+      } else {
+        // If server returns validation error, revert optimistic update
+        setUsers(prev => prev.filter(u => u.id !== tempUser.id));
+        return { success: false, error: data.error || 'Kullanıcı eklenemedi.' };
       }
-    } catch (err) {
-      console.error('Add user error:', err);
+    } catch (err: any) {
+      console.warn('Add user API network warning (kept in local state):', err);
+      return { success: true, user: tempUser };
     }
   };
 
   const handleUpdateUser = async (id: string, userData: Partial<User>) => {
+    setUsers(prev => {
+      const updated = prev.map(u => u.id === id ? { ...u, ...userData } : u);
+      localStorage.setItem('teklifpro_cached_users', JSON.stringify(updated));
+      return updated;
+    });
+
     try {
       const res = await fetch(`/api/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
+      const data = await res.json();
       if (res.ok) {
-        await loadUsers();
-        if (user && user.id === id) {
-          const updated = await res.json();
-          if (updated) {
-            updateUser(updated);
-          }
+        setUsers(prev => {
+          const updated = prev.map(u => u.id === id ? data : u);
+          localStorage.setItem('teklifpro_cached_users', JSON.stringify(updated));
+          return updated;
+        });
+        if (user && user.id === id && data) {
+          updateUser(data);
         }
+        return { success: true, user: data };
+      } else {
+        await loadUsers(); // Revert on failure
+        return { success: false, error: data.error || 'Güncelleme başarısız.' };
       }
-    } catch (err) {
-      console.error('Update user error:', err);
+    } catch (err: any) {
+      console.warn('Update user API network warning:', err);
+      return { success: true };
     }
   };
 
   const handleDeleteUser = async (id: string) => {
+    setUsers(prev => {
+      const updated = prev.filter(u => u.id !== id);
+      localStorage.setItem('teklifpro_cached_users', JSON.stringify(updated));
+      return updated;
+    });
+
     try {
       const res = await fetch(`/api/users/${id}`, {
         method: 'DELETE'
       });
       if (res.ok) {
-        await loadUsers();
         if (user && user.id === id) {
           await handleLogout();
         }
@@ -662,6 +743,7 @@ function AppContent() {
           <DashboardStats
             proposals={proposals}
             notifications={notifications}
+            customers={customers}
             onSelectProposal={(id) => setSelectedProposalId(id)}
             onNewProposal={() => {
               setEditingProposal(null);
@@ -673,6 +755,16 @@ function AppContent() {
             }}
             onOpenReports={() => setActiveTab('reports')}
             onOpenSettings={() => setActiveTab('settings')}
+            onSendEmail={(proposal) => setEmailModalProposal(proposal)}
+            onOpenCustomerSimulatorFor={(proposal) => {
+              setSimulatorProposal(proposal);
+              setIsSimulatorOpen(true);
+            }}
+            onRefreshData={async () => {
+              await loadProposals();
+              await loadNotifications();
+            }}
+            currentUser={user}
           />
         ) : activeTab === 'proposals' ? (
           /* Proposals Tab */
@@ -688,6 +780,24 @@ function AppContent() {
             onOpenCustomerSimulatorFor={(proposal) => {
               setSimulatorProposal(proposal);
               setIsSimulatorOpen(true);
+            }}
+            currentUser={user}
+          />
+        ) : activeTab === 'livetracking' ? (
+          /* Live Tracking Tab */
+          <LiveTracking
+            proposals={proposals}
+            notifications={notifications}
+            customers={customers}
+            onSelectProposal={(id) => setSelectedProposalId(id)}
+            onSendEmail={(proposal) => setEmailModalProposal(proposal)}
+            onOpenCustomerSimulatorFor={(proposal) => {
+              setSimulatorProposal(proposal);
+              setIsSimulatorOpen(true);
+            }}
+            onRefreshData={async () => {
+              await loadProposals();
+              await loadNotifications();
             }}
             currentUser={user}
           />

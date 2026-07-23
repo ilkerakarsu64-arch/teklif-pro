@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Proposal, AppSettings } from '../types';
 import { formatCurrency, getPublicPortalUrl } from '../utils/formatters';
 import { openDefaultMailClientWithPdf } from '../utils/mailClient';
-import { Mail, X, CheckCircle2, ExternalLink, Paperclip, Check } from 'lucide-react';
+import { downloadProposalPdf } from '../utils/pdfDownloader';
+import { Mail, X, CheckCircle2, ExternalLink, Paperclip, Check, Download, FileText, MessageSquare, Phone } from 'lucide-react';
 
 interface EmailModalProps {
   proposal: Proposal;
@@ -20,6 +21,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   onSend
 }) => {
   const [toEmail, setToEmail] = useState(proposal.customer.email || '');
+  const [phone, setPhone] = useState(proposal.customer.phone || '');
   const [subject, setSubject] = useState(`${proposal.proposalNumber} - ${proposal.title}`);
   const [customMessage, setCustomMessage] = useState(
     `Sayın ${proposal.customer.name || proposal.customer.companyName},\n\n` +
@@ -28,8 +30,18 @@ export const EmailModal: React.FC<EmailModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
   const [isOpeningMailClient, setIsOpeningMailClient] = useState(false);
+  const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleDirectPdfDownload = async () => {
+    try {
+      const paperElement = document.getElementById('proposal-paper-container');
+      await downloadProposalPdf(paperElement, `Teklif_${proposal.proposalNumber}`);
+    } catch (err) {
+      console.error('PDF download error:', err);
+    }
+  };
 
   // Open Installed Default Desktop Mail Client (Outlook, Thunderbird, etc.)
   const handleOpenMailClient = async () => {
@@ -46,6 +58,48 @@ export const EmailModal: React.FC<EmailModalProps> = ({
       setSentSuccess(true);
     } finally {
       setIsOpeningMailClient(false);
+    }
+  };
+
+  // Send PDF & Message via WhatsApp
+  const handleSendWhatsApp = async () => {
+    setIsSendingWhatsApp(true);
+    try {
+      // 1. Download PDF to user device automatically
+      await handleDirectPdfDownload();
+
+      // 2. Format phone number for WhatsApp
+      let cleanPhone = phone.replace(/\D/g, '');
+      if (cleanPhone.length === 10 && cleanPhone.startsWith('5')) {
+        cleanPhone = '90' + cleanPhone;
+      } else if (cleanPhone.length === 11 && cleanPhone.startsWith('05')) {
+        cleanPhone = '90' + cleanPhone.slice(1);
+      }
+
+      // 3. Construct WhatsApp Message text
+      const portalUrl = getPublicPortalUrl(proposal.id, settings);
+      const waText = 
+        `Sayın ${proposal.customer.name || proposal.customer.companyName},\n\n` +
+        `"${proposal.title}" başlıklı teklif belgeniz ve detayları bilgilerinize sunulmuştur.\n\n` +
+        `👉 Teklifi dijital ortamda incelemek ve onaylamak için tıklayın:\n${portalUrl}\n\n` +
+        `(Teklifinizin A4 PDF belgesi cihazınıza indirilmiştir, bu sohbete ekleyebilirsiniz.)\n\n` +
+        `Saygılarımızla,\n${settings?.company?.name || 'TEKLİFPRO DİJİTAL A.Ş.'}`;
+
+      const waUrl = cleanPhone 
+        ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(waText)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+
+      // 4. Open WhatsApp Web or App
+      window.open(waUrl, '_blank');
+
+      // 5. Update proposal status to GONDERILDI
+      await onSend(toEmail, subject, customMessage);
+      setSentSuccess(true);
+    } catch (err) {
+      console.error('WhatsApp send error:', err);
+      setSentSuccess(true);
+    } finally {
+      setIsSendingWhatsApp(false);
     }
   };
 
@@ -79,8 +133,8 @@ export const EmailModal: React.FC<EmailModalProps> = ({
               <Mail className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-sm text-white uppercase tracking-wider">
-                Müşteriye Teklif E-Postası Hazırla
+              <h3 className="font-bold text-sm text-white uppercase tracking-wider flex items-center gap-2">
+                <span>Teklif Gönderimi (E-Posta & WhatsApp)</span>
               </h3>
               <p className="text-[11px] text-slate-400 font-mono">
                 {proposal.proposalNumber} • {proposal.customer.companyName || proposal.customer.name}
@@ -101,15 +155,15 @@ export const EmailModal: React.FC<EmailModalProps> = ({
             <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto animate-bounce" />
             <div className="space-y-1">
               <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">
-                E-Posta Durumu & Kaydı Güncellendi!
+                Teklif Gönderim Kaydı Güncellendi!
               </h3>
               <p className="text-xs font-mono text-slate-600">
-                Alıcı: <strong className="text-blue-600">{toEmail}</strong>
+                Teklif Durumu: <strong className="text-emerald-600 font-bold uppercase">Gönderildi</strong>
               </p>
             </div>
 
             <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-              Teklif durumu <strong>Gönderildi</strong> olarak güncellendi. Mail uygulamanızdan gönderilen teklif müşteriniz tarafından incelendiğinde bildirim panelinizde anında görünecektir.
+              Teklif durumu sisteminizde <strong>Gönderildi</strong> olarak güncellendi. Müşteriniz teklifi incelediğinde Canlı Takip panelinizde anında bildirim alacaksınız.
             </p>
 
             <div className="pt-2">
@@ -129,17 +183,31 @@ export const EmailModal: React.FC<EmailModalProps> = ({
           <form onSubmit={handleSaveAsSent} className="p-6 space-y-4 text-xs">
             
             {/* Form Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block font-bold uppercase tracking-wider text-slate-500 mb-1 text-[10px]">
-                  Alıcı E-Posta Adresi *
+                  Alıcı E-Posta *
                 </label>
                 <input
                   type="email"
                   required
                   value={toEmail}
                   onChange={(e) => setToEmail(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg font-mono text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg font-mono text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold uppercase tracking-wider text-slate-500 mb-1 text-[10px] flex items-center gap-1">
+                  <Phone className="w-3 h-3 text-emerald-600" />
+                  <span>WhatsApp Tel *</span>
+                </label>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="05xx xxx xx xx"
+                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg font-mono text-xs text-slate-900 focus:outline-none focus:border-emerald-600"
                 />
               </div>
 
@@ -152,7 +220,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                   required
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
             </div>
@@ -172,7 +240,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({
             {/* Email Visual Preview Card */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">
-                Müşterinizin Göreceği E-Posta Önizlemesi
+                Müşterinizin Göreceği Mesaj Önizlemesi
               </label>
               
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-800 space-y-3 font-sans">
@@ -201,9 +269,10 @@ export const EmailModal: React.FC<EmailModalProps> = ({
                         e.preventDefault();
                         window.open(portalUrl, '_blank');
                       }}
+                      title="Müşteri dijital teklif inceleme portal ekranını açar"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Teklifi İncele & Onayla</span>
+                      <span>Teklifi İncele</span>
                     </a>
                   </div>
                   
@@ -226,47 +295,43 @@ export const EmailModal: React.FC<EmailModalProps> = ({
               </div>
             </div>
 
-            {/* PDF Attachment Info Banner */}
-            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900">
-              <Paperclip className="w-4 h-4 text-blue-600 shrink-0" />
-              <span>
-                <strong>Teklif PDF Belgesi:</strong> <code className="font-mono bg-blue-100 px-1.5 py-0.5 rounded text-blue-950 font-bold">Teklif_{proposal.proposalNumber}.pdf</code> belgesi bilgisayarınıza indirilir ve yerel mail programınız (Outlook vb.) çalıştırılır.
-              </span>
-            </div>
-
             {/* Footer Action Buttons */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-slate-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-200">
               
-              {/* Button 1: Open Default Computer Desktop Mail App (Outlook etc.) */}
-              <button
-                type="button"
-                disabled={isOpeningMailClient || isSaving}
-                onClick={handleOpenMailClient}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 border border-amber-400 shadow-xs transition-colors cursor-pointer active:scale-95"
-                title="Bilgisayarınızda yüklü olan varsayılan e-posta uygulamasını (Outlook vb.) çalıştırır"
-              >
-                <Mail className="w-4 h-4 text-slate-950" />
-                <span>{isOpeningMailClient ? 'Mail Programı Hazırlanıyor...' : 'Mail Programını Aç + PDF İndir (Outlook vb.)'}</span>
-              </button>
-
-              {/* Button 2: Save as Sent / Save Draft */}
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                {/* Button 1: Mail Gönder */}
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="px-4 py-2.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 cursor-pointer"
+                  disabled={isOpeningMailClient || isSendingWhatsApp}
+                  onClick={handleOpenMailClient}
+                  className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-blue-500 shadow-sm transition-colors cursor-pointer active:scale-95"
+                  title="E-posta istemciniz üzerinden mail gönderir"
                 >
-                  İptal
+                  <Mail className="w-4 h-4 text-white" />
+                  <span>{isOpeningMailClient ? 'Mail Hazırlanıyor...' : 'Mail Gönder'}</span>
                 </button>
+
+                {/* Button 2: WhatsApp ile Gönder (+ PDF İndir) */}
                 <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs border border-blue-500 flex items-center gap-2 shadow-xs cursor-pointer active:scale-95"
+                  type="button"
+                  disabled={isOpeningMailClient || isSendingWhatsApp}
+                  onClick={handleSendWhatsApp}
+                  className="px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500 shadow-sm transition-colors cursor-pointer active:scale-95"
+                  title="WhatsApp uygulamasını/web ekranını açar ve teklif PDF belgesini cihazınıza indirir"
                 >
-                  <Check className="w-4 h-4" />
-                  <span>{isSaving ? 'Kaydediliyor...' : 'Gönderildi / Taslak Olarak Kaydet'}</span>
+                  <MessageSquare className="w-4 h-4 text-white fill-white" />
+                  <span>{isSendingWhatsApp ? 'PDF Hazırlanıyor...' : 'WhatsApp ile Gönder (+ PDF)'}</span>
                 </button>
               </div>
+
+              {/* Cancel Button */}
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 cursor-pointer"
+              >
+                İptal
+              </button>
 
             </div>
 

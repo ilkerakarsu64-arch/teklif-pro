@@ -1,5 +1,5 @@
 import { Proposal, AppSettings } from '../types';
-import { formatCurrency, formatDate } from './formatters';
+import { formatCurrency, formatDate, getPublicPortalUrl } from './formatters';
 
 export function generateProposalEmailHtml(
   proposal: Proposal,
@@ -7,7 +7,7 @@ export function generateProposalEmailHtml(
   customMessage?: string,
   hostOrigin: string = ''
 ): string {
-  const portalUrl = `${hostOrigin}#/customer/teklif/${proposal.id}`;
+  const portalUrl = getPublicPortalUrl(proposal.id, settings);
   const company = settings.company;
 
   const devices = (proposal.devices && proposal.devices.length > 0)

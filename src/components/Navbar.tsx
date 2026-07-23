@@ -13,12 +13,15 @@ import {
   LogOut,
   Menu,
   X,
-  Receipt
+  Receipt,
+  Radio
 } from 'lucide-react';
 
+export type NavTab = 'dashboard' | 'proposals' | 'livetracking' | 'invoices' | 'customers' | 'reports' | 'settings';
+
 interface NavbarProps {
-  activeTab: 'dashboard' | 'proposals' | 'invoices' | 'customers' | 'reports' | 'settings';
-  setActiveTab: (tab: 'dashboard' | 'proposals' | 'invoices' | 'customers' | 'reports' | 'settings') => void;
+  activeTab: NavTab;
+  setActiveTab: (tab: NavTab) => void;
   onNewProposal: () => void;
   unreadCount: number;
   onOpenNotifications: () => void;
@@ -40,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const permissions = currentUser ? getUserPermissions(currentUser.role) : getUserPermissions('ADMIN');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleNavClick = (tab: 'dashboard' | 'proposals' | 'invoices' | 'customers' | 'reports' | 'settings') => {
+  const handleNavClick = (tab: NavTab) => {
     setActiveTab(tab);
     setMobileMenuOpen(false);
   };
@@ -57,6 +60,13 @@ export const Navbar: React.FC<NavbarProps> = ({
       label: 'Teklifler',
       icon: FileText,
       show: true
+    },
+    {
+      id: 'livetracking' as const,
+      label: 'Canlı Takip',
+      icon: Radio,
+      show: true,
+      isLive: true
     },
     {
       id: 'invoices' as const,
@@ -209,8 +219,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : item.isLive ? 'text-emerald-500 animate-pulse' : 'text-slate-500'}`} />
                     <span className="flex-1 text-left">{item.label}</span>
+                    {item.isLive && (
+                      <span className={`px-1.5 py-0.5 text-[9px] uppercase font-extrabold tracking-wider rounded-full flex items-center gap-1 ${
+                        isActive ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                      }`}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                        CANLI
+                      </span>
+                    )}
                   </button>
                 );
               })}

@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
-import { Proposal, AppNotification } from '../types';
-import { formatCurrency, formatDate } from '../utils/formatters';
+import React, { useState, useMemo } from 'react';
+import { Proposal, AppNotification, Customer, User } from '../types';
+import { LiveTracking } from './LiveTracking';
+import { formatCurrency, formatDate, getPublicPortalUrl } from '../utils/formatters';
 import { 
   FileText, 
   CheckCircle2, 
@@ -19,7 +20,12 @@ import {
   Settings as SettingsIcon,
   PlusCircle,
   FileBarChart2,
-  Bell
+  Bell,
+  Radio,
+  ExternalLink,
+  Send,
+  Building2,
+  Filter
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -37,22 +43,39 @@ import {
 interface DashboardStatsProps {
   proposals: Proposal[];
   notifications: AppNotification[];
+  customers?: Customer[];
   onSelectProposal: (id: string) => void;
   onNewProposal: () => void;
   onOpenCustomerSimulator: () => void;
   onOpenReports?: () => void;
   onOpenSettings?: () => void;
+  onSendEmail?: (proposal: Proposal) => void;
+  onOpenCustomerSimulatorFor?: (proposal: Proposal) => void;
+  onRefreshData?: () => Promise<void> | void;
+  currentUser?: User | null;
 }
 
 export const DashboardStats: React.FC<DashboardStatsProps> = ({
   proposals,
   notifications,
+  customers = [],
   onSelectProposal,
   onNewProposal,
   onOpenCustomerSimulator,
   onOpenReports,
-  onOpenSettings
+  onOpenSettings,
+  onSendEmail = () => {},
+  onOpenCustomerSimulatorFor = (p) => onOpenCustomerSimulator(),
+  onRefreshData = () => {},
+  currentUser = null
 }) => {
+  const [notifFilter, setNotifFilter] = useState<'ALL' | 'ONAY' | 'GORUNTULEME' | 'EPOSTA_GONDERILDI' | 'RET'>('ALL');
+
+  const filteredNotifications = useMemo(() => {
+    if (notifFilter === 'ALL') return notifications;
+    return notifications.filter(n => n.type === notifFilter);
+  }, [notifications, notifFilter]);
+
   // Key Financial Metrics
   const totalCount = proposals.length;
   const approvedProposals = proposals.filter(p => p.status === 'ONAYLANDI');
@@ -634,83 +657,218 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
 
         {/* Right Column: Real-time Notifications Feed (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden hover:shadow-sm transition-shadow">
-          <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-            <h3 className="font-bold text-xs uppercase tracking-widest text-slate-900 flex items-center gap-2">
-              <Bell className="w-4 h-4 text-blue-600 animate-pulse" />
-              <span>Canlı Bildirim Akışı</span>
-            </h3>
-            <span className="bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
+        <div className="lg:col-span-4 flex flex-col bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300">
+          
+          {/* Section Header - Crisp White */}
+          <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 shadow-2xs">
+                <Radio className="w-4 h-4 animate-pulse text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="font-black text-xs uppercase tracking-wider text-slate-900">
+                  Canlı Bildirim & Müşteri Takip
+                </h3>
+                <p className="text-[10px] text-slate-500 font-mono font-semibold">
+                  Gerçek Zamanlı Müşteri Etkileşimleri
+                </p>
+              </div>
+            </div>
+
+            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
-              <span>CANLI</span>
+              <span>{notifications.length} HAREKET</span>
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[420px]">
-            {notifications.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 text-xs">
-                Henüz canlı bildirim kaydı yok.
+          {/* Quick Category Filter Pills - Light Slate */}
+          <div className="p-2 bg-slate-50 border-b border-slate-200 flex items-center gap-1 overflow-x-auto text-[11px]">
+            <button
+              type="button"
+              onClick={() => setNotifFilter('ALL')}
+              className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all cursor-pointer whitespace-nowrap ${
+                notifFilter === 'ALL'
+                  ? 'bg-blue-600 text-white shadow-2xs'
+                  : 'text-slate-600 hover:bg-slate-200/70'
+              }`}
+            >
+              Tümü ({notifications.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setNotifFilter('ONAY')}
+              className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all cursor-pointer whitespace-nowrap ${
+                notifFilter === 'ONAY'
+                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  : 'text-emerald-700 hover:bg-emerald-100/60'
+              }`}
+            >
+              ✓ Onay ({notifications.filter(n => n.type === 'ONAY').length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setNotifFilter('GORUNTULEME')}
+              className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all cursor-pointer whitespace-nowrap ${
+                notifFilter === 'GORUNTULEME'
+                  ? 'bg-blue-600 text-white shadow-2xs'
+                  : 'text-blue-700 hover:bg-blue-100/60'
+              }`}
+            >
+              👁 Görüldü ({notifications.filter(n => n.type === 'GORUNTULEME').length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setNotifFilter('EPOSTA_GONDERILDI')}
+              className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all cursor-pointer whitespace-nowrap ${
+                notifFilter === 'EPOSTA_GONDERILDI'
+                  ? 'bg-amber-600 text-white shadow-2xs'
+                  : 'text-amber-800 hover:bg-amber-100/60'
+              }`}
+            >
+              ✉ Mail ({notifications.filter(n => n.type === 'EPOSTA_GONDERILDI').length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setNotifFilter('RET')}
+              className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all cursor-pointer whitespace-nowrap ${
+                notifFilter === 'RET'
+                  ? 'bg-rose-600 text-white shadow-2xs'
+                  : 'text-rose-700 hover:bg-rose-100/60'
+              }`}
+            >
+              ✕ Red ({notifications.filter(n => n.type === 'RET').length})
+            </button>
+          </div>
+
+          {/* Notifications Feed Scroll Container - Pure White */}
+          <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5 max-h-[440px] bg-white">
+            {filteredNotifications.length === 0 ? (
+              <div className="text-center py-16 space-y-2">
+                <Bell className="w-8 h-8 text-slate-300 mx-auto animate-pulse" />
+                <p className="text-xs text-slate-500 font-semibold">
+                  Bu filtreye ait canlı bildirim kaydı bulunamadı.
+                </p>
               </div>
             ) : (
-              notifications.slice(0, 6).map((notif) => {
-                let borderClass = "border-l-4 border-slate-300 bg-slate-50";
-                let typeText = "SİSTEM MESAJI";
-                let typeColor = "text-slate-600";
+              filteredNotifications.map((notif) => {
+                let badgeBg = "bg-slate-100 text-slate-700 border-slate-200";
+                let typeLabel = "SİSTEM MESAJI";
+                let IconComponent = Bell;
+                let cardBg = "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm";
 
                 if (notif.type === 'ONAY') {
-                  borderClass = "border-l-4 border-emerald-500 bg-emerald-50/50";
-                  typeText = "TEKLİF ONAYLANDI";
-                  typeColor = "text-emerald-700";
+                  badgeBg = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                  typeLabel = "TEKLİF ONAYLANDI";
+                  IconComponent = CheckCircle2;
+                  cardBg = "bg-white border-emerald-200/90 hover:border-emerald-500 shadow-2xs";
                 } else if (notif.type === 'RET') {
-                  borderClass = "border-l-4 border-rose-500 bg-rose-50/50";
-                  typeText = "TEKLİF REDDEDİLDİ";
-                  typeColor = "text-rose-700";
+                  badgeBg = "bg-rose-50 text-rose-700 border-rose-200";
+                  typeLabel = "TEKLİF REDDEDİLDİ";
+                  IconComponent = XCircle;
+                  cardBg = "bg-white border-rose-200/90 hover:border-rose-500 shadow-2xs";
                 } else if (notif.type === 'GORUNTULEME') {
-                  borderClass = "border-l-4 border-blue-500 bg-blue-50/50";
-                  typeText = "TEKLİF GÖRÜLDÜ";
-                  typeColor = "text-blue-700";
+                  badgeBg = "bg-blue-50 text-blue-700 border-blue-200";
+                  typeLabel = "İNTERNETTEN İNCELENDİ";
+                  IconComponent = Eye;
+                  cardBg = "bg-white border-blue-200/90 hover:border-blue-500 shadow-2xs";
                 } else if (notif.type === 'EPOSTA_GONDERILDI') {
-                  borderClass = "border-l-4 border-amber-500 bg-amber-50/50";
-                  typeText = "E-POSTA İLETİLDİ";
-                  typeColor = "text-amber-700";
+                  badgeBg = "bg-amber-50 text-amber-800 border-amber-200";
+                  typeLabel = "E-POSTA İLETİLDİ";
+                  IconComponent = Send;
+                  cardBg = "bg-white border-amber-200/90 hover:border-amber-500 shadow-2xs";
                 }
+
+                const portalUrl = getPublicPortalUrl(notif.proposalId);
 
                 return (
                   <div
                     key={notif.id}
-                    onClick={() => onSelectProposal(notif.proposalId)}
-                    className={`p-3.5 ${borderClass} rounded-r-lg cursor-pointer hover:-translate-x-0.5 hover:shadow-xs transition-all duration-200 text-xs space-y-1`}
+                    className={`p-3.5 rounded-xl border ${cardBg} transition-all duration-200 space-y-2 group`}
                   >
-                    <div className="flex justify-between items-start">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider ${typeColor}`}>
-                        {typeText}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-mono">
-                        {formatDate(notif.createdAt)}
+                    {/* Header line */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-black tracking-wider uppercase border flex items-center gap-1 ${badgeBg}`}>
+                          <IconComponent className="w-3 h-3" />
+                          <span>{typeLabel}</span>
+                        </span>
+                        <span className="font-mono text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                          {notif.proposalNumber}
+                        </span>
+                      </div>
+
+                      <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1 shrink-0">
+                        <Clock className="w-3 h-3 text-slate-400" />
+                        <span>{formatDate(notif.createdAt)}</span>
                       </span>
                     </div>
 
-                    <p className="text-slate-800 font-medium leading-snug">
+                    {/* Message Body */}
+                    <p className="text-xs text-slate-800 font-semibold leading-relaxed">
                       {notif.message}
                     </p>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-200/50">
-                      <span>{notif.customerName}</span>
-                      <span className="font-mono font-bold text-blue-600">{notif.proposalNumber}</span>
+                    {/* Customer Note if present */}
+                    {notif.customerNote && (
+                      <div className="p-2 bg-slate-50 rounded-lg border border-slate-200 text-[11px] text-slate-700 italic">
+                        &quot;{notif.customerNote}&quot;
+                      </div>
+                    )}
+
+                    {/* Bottom Metadata & Action Buttons */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-150 text-[11px]">
+                      <div className="flex items-center gap-1.5 text-slate-700 font-bold truncate max-w-[170px]">
+                        <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{notif.customerName}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {notif.amount && (
+                          <span className="font-mono font-bold text-emerald-600 text-[11px] mr-1">
+                            {formatCurrency(notif.amount, (notif.currency as any) || 'TRY')}
+                          </span>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => onSelectProposal(notif.proposalId)}
+                          className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700 font-bold text-[10px] transition-colors flex items-center gap-1 cursor-pointer border border-slate-200"
+                          title="Teklif detayını göster"
+                        >
+                          <FileText className="w-3 h-3" />
+                          <span>Aç</span>
+                        </button>
+
+                        <a
+                          href={portalUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(portalUrl, '_blank');
+                          }}
+                          className="p-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition-colors cursor-pointer"
+                          title="Müşteri internet inceleme portalını aç"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
                     </div>
+
                   </div>
                 );
               })
             )}
           </div>
 
-          <div className="p-4 bg-slate-50 border-t border-slate-200">
+          {/* Simulator Bar - Crisp White */}
+          <div className="p-3.5 bg-white border-t border-slate-200">
             <button
               onClick={onOpenCustomerSimulator}
-              className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 border border-amber-400 shadow-xs cursor-pointer active:scale-95"
+              className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs rounded-xl transition-all duration-200 flex items-center justify-center gap-2 border border-amber-400/80 shadow-xs cursor-pointer active:scale-98"
             >
               <Zap className="w-3.5 h-3.5 fill-slate-950 animate-bounce" />
-              <span>Müşteri Onayını Şimdi Simüle Et</span>
+              <span>Müşteri Onayını / Etkileşimini Simüle Et</span>
             </button>
           </div>
         </div>

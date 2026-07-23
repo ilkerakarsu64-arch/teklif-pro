@@ -193,7 +193,7 @@ export interface AppSettings {
     emailSubjectTemplate: string;
   };
   appearance: {
-    theme: 'light' | 'dark' | 'system';
+    theme: 'light' | 'dark' | 'midnight' | 'emerald' | 'sunset' | 'system';
     compactView: boolean;
   };
 }

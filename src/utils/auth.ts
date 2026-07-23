@@ -7,7 +7,17 @@ export const DEFAULT_USERS: User[] = [
     name: 'İlker (Sistem Yöneticisi)',
     email: 'admin@teklifpro.com.tr',
     role: 'ADMIN',
-    password: 'admin',
+    password: 'admin123',
+    isActive: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'usr-admin-2',
+    username: 'yonetici',
+    name: 'Sistem Yöneticisi (Admin)',
+    email: 'yonetici@teklifpro.com.tr',
+    role: 'ADMIN',
+    password: '123',
     isActive: true,
     createdAt: new Date().toISOString()
   },

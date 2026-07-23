@@ -309,32 +309,109 @@ async function startServer() {
   // POST /api/users
   app.post("/api/users", async (req, res) => {
     try {
+      const { username, name, email, role, password, isActive, avatarUrl } = req.body;
+      const cleanUsername = (username || '').trim();
+      const cleanEmail = (email || '').trim();
+
+      if (!cleanUsername || !name || !cleanEmail) {
+        return res.status(400).json({ error: "Kullanıcı adı, isim ve e-posta zorunludur." });
+      }
+
+      // Check duplicate username or email
+      const allUsers = await getAllUsers();
+      const existingUser = allUsers.find(
+        u => u.username.toLowerCase() === cleanUsername.toLowerCase() || u.email.toLowerCase() === cleanEmail.toLowerCase()
+      );
+      if (existingUser) {
+        if (existingUser.username.toLowerCase() === cleanUsername.toLowerCase()) {
+          return res.status(400).json({ error: `'${cleanUsername}' kullanıcı adı zaten kullanımda.` });
+        }
+        return res.status(400).json({ error: `'${cleanEmail}' e-posta adresi zaten kullanımda.` });
+      }
+
+      const rawPass = (password || '123456').trim();
       const newUser: User = {
         id: `usr-${Date.now()}`,
-        username: req.body.username || `kullanici_${Date.now()}`,
-        name: req.body.name || "Yeni Kullanıcı",
-        email: req.body.email || "",
-        role: req.body.role || "SALES",
-        password: req.body.password || "123456",
-        avatarUrl: req.body.avatarUrl || undefined,
-        isActive: req.body.isActive !== undefined ? req.body.isActive : true,
+        username: cleanUsername,
+        name: name.trim(),
+        email: cleanEmail,
+        role: role || "SALES",
+        password: rawPass,
+        avatarUrl: avatarUrl || undefined,
+        isActive: isActive !== undefined ? Boolean(isActive) : true,
         createdAt: new Date().toISOString()
       };
+
       await insertUser(newUser);
+      
+      await logAuthEvent('USER_CREATED', true, {
+        userId: newUser.id,
+        username: newUser.username,
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get('user-agent'),
+        details: `Yeni kullanıcı oluşturuldu (Rol: ${newUser.role})`
+      });
+
       res.status(201).json(newUser);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message || "Kullanıcı eklenirken sunucu hatası oluştu." });
     }
   });
 
   // PUT /api/users/:id
   app.put("/api/users/:id", async (req, res) => {
     try {
-      await updateUser(req.params.id, req.body);
+      const existing = await getUserById(req.params.id);
+      if (!existing) {
+        return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+      }
+
+      const { username, name, email, role, password, isActive, avatarUrl } = req.body;
+      const cleanUsername = username !== undefined ? username.trim() : existing.username;
+      const cleanEmail = email !== undefined ? email.trim() : existing.email;
+
+      // Check duplicates (excluding current user)
+      const allUsers = await getAllUsers();
+      const duplicate = allUsers.find(
+        u => u.id !== req.params.id && (
+          u.username.toLowerCase() === cleanUsername.toLowerCase() || 
+          u.email.toLowerCase() === cleanEmail.toLowerCase()
+        )
+      );
+      if (duplicate) {
+        if (duplicate.username.toLowerCase() === cleanUsername.toLowerCase()) {
+          return res.status(400).json({ error: `'${cleanUsername}' kullanıcı adı başka bir kullanıcıda kayıtlı.` });
+        }
+        return res.status(400).json({ error: `'${cleanEmail}' e-posta adresi başka bir kullanıcıda kayıtlı.` });
+      }
+
+      const updatePayload: Partial<User> = {
+        username: cleanUsername,
+        name: name !== undefined ? name.trim() : existing.name,
+        email: cleanEmail,
+        role: role !== undefined ? role : existing.role,
+        isActive: isActive !== undefined ? Boolean(isActive) : existing.isActive,
+        avatarUrl: avatarUrl !== undefined ? avatarUrl : existing.avatarUrl
+      };
+
+      if (password && password.trim() && !password.startsWith('$2b$')) {
+        updatePayload.password = password.trim();
+      }
+
+      await updateUser(req.params.id, updatePayload);
       const updated = await getUserById(req.params.id);
+
+      await logAuthEvent('USER_UPDATED', true, {
+        userId: req.params.id,
+        username: cleanUsername,
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.get('user-agent'),
+        details: `Kullanıcı bilgileri güncellendi`
+      });
+
       res.json(updated);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message || "Kullanıcı güncellenirken sunucu hatası oluştu." });
     }
   });
 

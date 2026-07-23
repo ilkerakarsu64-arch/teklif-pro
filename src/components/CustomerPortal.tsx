@@ -647,6 +647,19 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
 
       </div>
 
+      {/* Floating Quick Action Pill for Customers */}
+      <div className="fixed bottom-6 right-6 z-40 print:hidden flex items-center gap-2">
+        <button
+          onClick={handleDownloadPdf}
+          disabled={downloadingPdf}
+          className="px-4 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-2xl flex items-center gap-2 border border-slate-700 transition-all hover:scale-105 cursor-pointer active:scale-95 disabled:opacity-50"
+          title="Teklif belgesinin A4 PDF çıktısını indirin"
+        >
+          <Download className="w-4 h-4 text-emerald-400" />
+          <span>{downloadingPdf ? 'PDF İndiriliyor...' : '📄 Orijinal PDF Çıktısını İndir'}</span>
+        </button>
+      </div>
+
       {/* Approval Modal */}
       {showApprovalModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
